@@ -45,30 +45,85 @@ The built files will be in the `dist/` directory.
 npm run preview
 ```
 
-## Deployment Options
+## Deployment
 
-### GitHub Pages
+The website is configured for deployment to **three platforms** - all with **FREE hosting**!
 
-1. Build the project:
-   ```bash
-   npm run build
-   ```
+### 🚀 GitHub Pages (Automatic)
 
-2. Deploy the `dist/` folder to GitHub Pages
+**Status**: ✅ Configured with GitHub Actions
 
-### Netlify
+The site automatically deploys to GitHub Pages on every push to `main`.
 
-1. Connect your repository to Netlify
-2. Set build command: `npm run build`
-3. Set publish directory: `dist`
+**Live URL**: https://valginer0.github.io/PGVectorRAGIndexerWebsite
 
-### Vercel
+**Setup** (one-time):
+1. Go to repository Settings → Pages
+2. Under "Build and deployment":
+   - Source: **GitHub Actions**
+3. Push to main branch - deployment starts automatically!
 
-1. Connect your repository to Vercel
-2. Vercel will auto-detect Vite configuration
-3. Deploy with one click
+**Note**: First deployment may take 2-3 minutes. Check the "Actions" tab to monitor progress.
 
-## Project Structure
+---
+
+### 🌐 Netlify (2-Click Setup)
+
+**Status**: ✅ Configured with `netlify.toml`
+
+**Setup**:
+1. Go to [netlify.com](https://netlify.com) and sign in with GitHub
+2. Click "Add new site" → "Import an existing project"
+3. Choose GitHub → Select `PGVectorRAGIndexerWebsite` repository
+4. Click "Deploy" (settings auto-detected from `netlify.toml`)
+
+**Live URL**: `https://[your-site-name].netlify.app` (customizable in settings)
+
+**Features**:
+- Automatic deployments on every push
+- Deploy previews for pull requests
+- Custom domain support (free)
+- Instant rollbacks
+
+---
+
+### ⚡ Vercel (2-Click Setup)
+
+**Status**: ✅ Configured with `vercel.json`
+
+**Setup**:
+1. Go to [vercel.com](https://vercel.com) and sign in with GitHub
+2. Click "Add New" → "Project"
+3. Import `PGVectorRAGIndexerWebsite` repository
+4. Click "Deploy" (settings auto-detected from `vercel.json`)
+
+**Live URL**: `https://[your-project-name].vercel.app` (customizable)
+
+**Features**:
+- Automatic deployments on every push
+- Preview deployments for branches
+- Edge network (ultra-fast globally)
+- Custom domain support (free)
+
+---
+
+### 📊 Platform Comparison
+
+| Feature | GitHub Pages | Netlify | Vercel |
+|---------|-------------|---------|--------|
+| **Cost** | Free | Free | Free |
+| **Bandwidth** | 100GB/month | 100GB/month | 100GB/month |
+| **Auto Deploy** | ✅ | ✅ | ✅ |
+| **Custom Domain** | ✅ | ✅ | ✅ |
+| **HTTPS** | ✅ | ✅ | ✅ |
+| **Deploy Time** | ~2-3 min | ~1-2 min | ~1 min |
+| **Setup** | Automatic | 2 clicks | 2 clicks |
+
+**Recommendation**: Deploy to all three! They're all free and provide redundancy.
+
+---
+
+## Local Development
 
 ```
 PGVectorRAGIndexerWebsite/
