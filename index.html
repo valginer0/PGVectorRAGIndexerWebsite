@@ -1,28 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <!-- SEO Meta Tags -->
   <title>PGVectorRAGIndexer - Production-Ready Semantic Document Search</title>
-  <meta name="description" content="A production-ready semantic document search system using PostgreSQL with pgvector. Built for RAG applications with enterprise-grade features, REST API, and modern desktop app.">
-  
+  <meta name="description"
+    content="A production-ready semantic document search system using PostgreSQL with pgvector. Built for RAG applications with enterprise-grade features, REST API, and modern desktop app.">
+
   <!-- Open Graph -->
   <meta property="og:title" content="PGVectorRAGIndexer - Semantic Document Search">
   <meta property="og:description" content="Production-ready RAG system with pgvector, REST API, and desktop app">
   <meta property="og:type" content="website">
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/vite.svg">
-  
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
   <link rel="stylesheet" href="/src/style.css">
 </head>
+
 <body>
   <!-- Navigation -->
   <nav id="navbar" class="navbar">
@@ -40,7 +45,8 @@
           <a href="https://github.com/valginer0/PGVectorRAGIndexer" target="_blank" class="nav-link nav-link-primary">
             <span>GitHub</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
             </svg>
           </a>
         </div>
@@ -62,19 +68,20 @@
           <span class="gradient-text">Built for RAG</span>
         </h1>
         <p class="hero-description">
-          A production-ready semantic search system using PostgreSQL with pgvector extension. 
+          A production-ready semantic search system using PostgreSQL with pgvector extension.
           Enterprise-grade features, modern desktop app, and powerful REST API.
         </p>
         <div class="hero-buttons">
           <a href="#quickstart" class="btn btn-primary">
             <span>Get Started</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 12l4-4-4-4"/>
+              <path d="M6 12l4-4-4-4" />
             </svg>
           </a>
           <a href="https://github.com/valginer0/PGVectorRAGIndexer" target="_blank" class="btn btn-secondary">
             <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
             </svg>
             <span>View on GitHub</span>
           </a>
@@ -104,60 +111,69 @@
         <h2 class="section-title">Enterprise-Grade Features</h2>
         <p class="section-description">Everything you need for production RAG applications</p>
       </div>
-      
+
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">📄</div>
           <h3 class="feature-title">Multi-Format Support</h3>
-          <p class="feature-description">PDF, DOC, DOCX, XLSX, TXT, HTML, PPTX, CSV, and web URLs. Automatic legacy .doc conversion with LibreOffice.</p>
+          <p class="feature-description">PDF, DOC, DOCX, XLSX, TXT, HTML, PPTX, CSV, and web URLs. Automatic legacy .doc
+            conversion with LibreOffice.</p>
         </div>
-        
+
         <div class="feature-card">
           <div class="feature-icon">🔍</div>
           <h3 class="feature-title">Hybrid Search</h3>
-          <p class="feature-description">Combine vector similarity with full-text search. Configurable weights for optimal results.</p>
+          <p class="feature-description">Combine vector similarity with full-text search. Configurable weights for
+            optimal results.</p>
         </div>
-        
+
         <div class="feature-card">
           <div class="feature-icon">🗄️</div>
           <h3 class="feature-title">PostgreSQL + pgvector</h3>
-          <p class="feature-description">Production-ready database with HNSW indexing, connection pooling, and health monitoring.</p>
+          <p class="feature-description">Production-ready database with HNSW indexing, connection pooling, and health
+            monitoring.</p>
         </div>
-        
+
         <div class="feature-card">
           <div class="feature-icon">🖥️</div>
           <h3 class="feature-title">Desktop Application</h3>
-          <p class="feature-description">Native Windows app with file picker, bulk operations, backup/restore, and Docker control.</p>
+          <p class="feature-description">Native Windows app with file picker, bulk operations, backup/restore, and
+            Docker control.</p>
         </div>
-        
+
         <div class="feature-card">
           <div class="feature-icon">⚡</div>
           <h3 class="feature-title">REST API</h3>
-          <p class="feature-description">FastAPI-based HTTP API with automatic OpenAPI docs, CORS support, and async operations.</p>
+          <p class="feature-description">FastAPI-based HTTP API with automatic OpenAPI docs, CORS support, and async
+            operations.</p>
         </div>
-        
+
         <div class="feature-card">
           <div class="feature-icon">🔄</div>
           <h3 class="feature-title">Bulk Operations</h3>
-          <p class="feature-description">Preview, export, delete, and restore multiple documents. Full backup/restore with JSON export.</p>
+          <p class="feature-description">Preview, export, delete, and restore multiple documents. Full backup/restore
+            with JSON export.</p>
         </div>
-        
+
         <div class="feature-card">
           <div class="feature-icon">🏷️</div>
           <h3 class="feature-title">Document Types</h3>
-          <p class="feature-description">Organize with custom types (policy, resume, report). Rich metadata storage and filtering.</p>
+          <p class="feature-description">Organize with custom types (policy, resume, report). Rich metadata storage and
+            filtering.</p>
         </div>
-        
+
         <div class="feature-card">
           <div class="feature-icon">🧪</div>
           <h3 class="feature-title">Comprehensive Testing</h3>
-          <p class="feature-description">143 tests covering unit, integration, and end-to-end scenarios. Separate test database.</p>
+          <p class="feature-description">143 tests covering unit, integration, and end-to-end scenarios. Separate test
+            database.</p>
         </div>
-        
+
         <div class="feature-card">
           <div class="feature-icon">🐳</div>
           <h3 class="feature-title">Docker Ready</h3>
-          <p class="feature-description">Pre-built images on GitHub Container Registry. One-line installation for all platforms.</p>
+          <p class="feature-description">Pre-built images on GitHub Container Registry. One-line installation for all
+            platforms.</p>
         </div>
       </div>
     </div>
@@ -170,22 +186,23 @@
         <h2 class="section-title">Get Started in Seconds</h2>
         <p class="section-description">One-line installation for all platforms</p>
       </div>
-      
+
       <div class="quickstart-content">
         <div class="platform-tabs">
           <button class="platform-tab active" data-platform="linux">Linux / macOS / WSL</button>
           <button class="platform-tab" data-platform="windows">Windows</button>
           <button class="platform-tab" data-platform="desktop">Desktop App</button>
         </div>
-        
+
         <div class="platform-content active" data-platform="linux">
           <div class="code-block">
             <div class="code-header">
               <span class="code-language">bash</span>
-              <button class="copy-btn" data-copy="curl -fsSL https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/docker-run.sh | bash">
+              <button class="copy-btn"
+                data-copy="curl -fsSL https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/docker-run.sh | bash">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="5" y="5" width="9" height="9" rx="1"/>
-                  <path d="M3 11V3a1 1 0 0 1 1-1h8"/>
+                  <rect x="5" y="5" width="9" height="9" rx="1" />
+                  <path d="M3 11V3a1 1 0 0 1 1-1h8" />
                 </svg>
                 <span>Copy</span>
               </button>
@@ -202,15 +219,16 @@
             </ul>
           </div>
         </div>
-        
+
         <div class="platform-content" data-platform="windows">
           <div class="code-block">
             <div class="code-header">
               <span class="code-language">powershell</span>
-              <button class="copy-btn" data-copy='Invoke-WebRequest -Uri "https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/docker-run.ps1" -OutFile "$env:TEMP\docker-run.ps1"; PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"'>
+              <button class="copy-btn"
+                data-copy='Invoke-WebRequest -Uri "https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/docker-run.ps1" -OutFile "$env:TEMP\docker-run.ps1"; PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"'>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="5" y="5" width="9" height="9" rx="1"/>
-                  <path d="M3 11V3a1 1 0 0 1 1-1h8"/>
+                  <rect x="5" y="5" width="9" height="9" rx="1" />
+                  <path d="M3 11V3a1 1 0 0 1 1-1h8" />
                 </svg>
                 <span>Copy</span>
               </button>
@@ -227,15 +245,16 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
             </ul>
           </div>
         </div>
-        
+
         <div class="platform-content" data-platform="desktop">
           <div class="code-block">
             <div class="code-header">
               <span class="code-language">powershell</span>
-              <button class="copy-btn" data-copy="irm https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/bootstrap_desktop_app.ps1 | iex">
+              <button class="copy-btn"
+                data-copy="irm https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/bootstrap_desktop_app.ps1 | iex">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="5" y="5" width="9" height="9" rx="1"/>
-                  <path d="M3 11V3a1 1 0 0 1 1-1h8"/>
+                  <rect x="5" y="5" width="9" height="9" rx="1" />
+                  <path d="M3 11V3a1 1 0 0 1 1-1h8" />
                 </svg>
                 <span>Copy</span>
               </button>
@@ -252,7 +271,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
             </ul>
           </div>
         </div>
-        
+
         <div class="services-info">
           <h3>Services Available After Installation</h3>
           <div class="services-grid">
@@ -298,9 +317,10 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
           <div class="section-badge">Windows Desktop App</div>
           <h2 class="section-title">Native Windows Experience</h2>
           <p class="desktop-description">
-            A powerful desktop application built with Qt/Python, designed specifically for Windows users who want a native file management experience.
+            A powerful desktop application built with Qt/Python, designed specifically for Windows users who want a
+            native file management experience.
           </p>
-          
+
           <div class="desktop-features">
             <div class="desktop-feature">
               <div class="desktop-feature-icon">📁</div>
@@ -309,7 +329,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
                 <p>Access Windows files directly without copying to shared folders</p>
               </div>
             </div>
-            
+
             <div class="desktop-feature">
               <div class="desktop-feature-icon">🔒</div>
               <div class="desktop-feature-content">
@@ -317,7 +337,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
                 <p>Store complete file paths like C:\Projects\document.pdf</p>
               </div>
             </div>
-            
+
             <div class="desktop-feature">
               <div class="desktop-feature-icon">🏷️</div>
               <div class="desktop-feature-content">
@@ -325,7 +345,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
                 <p>Custom types (policy, resume, report) with metadata filtering</p>
               </div>
             </div>
-            
+
             <div class="desktop-feature">
               <div class="desktop-feature-icon">🗑️</div>
               <div class="desktop-feature-content">
@@ -333,7 +353,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
                 <p>Preview, export backup, delete, and undo with one click</p>
               </div>
             </div>
-            
+
             <div class="desktop-feature">
               <div class="desktop-feature-icon">🐳</div>
               <div class="desktop-feature-content">
@@ -342,39 +362,29 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
               </div>
             </div>
           </div>
-          
-          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/INSTALL_DESKTOP_APP.md" target="_blank" class="btn btn-primary">
+
+          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/INSTALL_DESKTOP_APP.md" target="_blank"
+            class="btn btn-primary">
             <span>Installation Guide</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 12l4-4-4-4"/>
+              <path d="M6 12l4-4-4-4" />
             </svg>
           </a>
         </div>
-        
+
         <div class="desktop-visual">
-          <div class="desktop-window">
-            <div class="window-header">
-              <div class="window-controls">
-                <span class="window-control"></span>
-                <span class="window-control"></span>
-                <span class="window-control"></span>
-              </div>
-              <div class="window-title">PGVectorRAG Desktop</div>
+          <div class="desktop-screenshots">
+            <div class="screenshot-container">
+              <img src="/desktop-app-upload.png" alt="Desktop App Upload Tab" class="screenshot active"
+                id="screenshot-1">
+              <img src="/desktop-app-search.png" alt="Desktop App Search Tab" class="screenshot" id="screenshot-2">
+              <img src="/desktop-app-documents.png" alt="Desktop App Documents Tab" class="screenshot"
+                id="screenshot-3">
             </div>
-            <div class="window-content">
-              <div class="window-tabs">
-                <div class="window-tab active">Upload</div>
-                <div class="window-tab">Search</div>
-                <div class="window-tab">Documents</div>
-                <div class="window-tab">Manage</div>
-              </div>
-              <div class="window-body">
-                <div class="upload-area">
-                  <div class="upload-icon">📄</div>
-                  <div class="upload-text">Drag & drop files or click to browse</div>
-                  <div class="upload-hint">Supports PDF, DOCX, TXT, and more</div>
-                </div>
-              </div>
+            <div class="screenshot-dots">
+              <button class="dot active" data-screenshot="1" aria-label="View Upload tab"></button>
+              <button class="dot" data-screenshot="2" aria-label="View Search tab"></button>
+              <button class="dot" data-screenshot="3" aria-label="View Documents tab"></button>
             </div>
           </div>
         </div>
@@ -389,7 +399,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
         <h2 class="section-title">Powerful REST API</h2>
         <p class="section-description">FastAPI-based HTTP API with automatic OpenAPI documentation</p>
       </div>
-      
+
       <div class="api-content">
         <div class="api-examples">
           <div class="api-example">
@@ -408,7 +418,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
 }</code></pre>
             </div>
           </div>
-          
+
           <div class="api-example">
             <div class="api-example-header">
               <span class="api-method post">POST</span>
@@ -420,7 +430,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
   -F "document_type=policy"</code></pre>
             </div>
           </div>
-          
+
           <div class="api-example">
             <div class="api-example-header">
               <span class="api-method get">GET</span>
@@ -431,52 +441,52 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
             </div>
           </div>
         </div>
-        
+
         <div class="api-features">
           <h3>API Features</h3>
           <ul class="api-features-list">
             <li>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 10l3 3 7-7"/>
+                <path d="M5 10l3 3 7-7" />
               </svg>
               <span>Automatic OpenAPI documentation at <code>/docs</code></span>
             </li>
             <li>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 10l3 3 7-7"/>
+                <path d="M5 10l3 3 7-7" />
               </svg>
               <span>CORS support for web applications</span>
             </li>
             <li>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 10l3 3 7-7"/>
+                <path d="M5 10l3 3 7-7" />
               </svg>
               <span>Async operations for better performance</span>
             </li>
             <li>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 10l3 3 7-7"/>
+                <path d="M5 10l3 3 7-7" />
               </svg>
               <span>Comprehensive error handling</span>
             </li>
             <li>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 10l3 3 7-7"/>
+                <path d="M5 10l3 3 7-7" />
               </svg>
               <span>Metadata discovery and filtering</span>
             </li>
             <li>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 10l3 3 7-7"/>
+                <path d="M5 10l3 3 7-7" />
               </svg>
               <span>Bulk operations with preview</span>
             </li>
           </ul>
-          
+
           <a href="http://localhost:8000/docs" target="_blank" class="btn btn-secondary">
             <span>View API Documentation</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 4L4 12M12 4v8M12 4H4"/>
+              <path d="M12 4L4 12M12 4v8M12 4H4" />
             </svg>
           </a>
         </div>
@@ -491,26 +501,27 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
         <h2 class="section-title">Built for Real-World Applications</h2>
         <p class="section-description">From research to enterprise knowledge management</p>
       </div>
-      
+
       <div class="use-cases-grid">
         <div class="use-case-card">
           <div class="use-case-icon">🤖</div>
           <h3>RAG Applications</h3>
-          <p>Power your AI chatbots and assistants with semantic document retrieval for accurate, context-aware responses.</p>
+          <p>Power your AI chatbots and assistants with semantic document retrieval for accurate, context-aware
+            responses.</p>
         </div>
-        
+
         <div class="use-case-card">
           <div class="use-case-icon">📚</div>
           <h3>Knowledge Management</h3>
           <p>Build enterprise knowledge bases with semantic search across policies, procedures, and documentation.</p>
         </div>
-        
+
         <div class="use-case-card">
           <div class="use-case-icon">🔬</div>
           <h3>Research & Analysis</h3>
           <p>Index research papers, reports, and datasets for quick semantic search and discovery.</p>
         </div>
-        
+
         <div class="use-case-card">
           <div class="use-case-icon">💼</div>
           <h3>Document Management</h3>
@@ -538,27 +549,33 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
             <p>Commercial License (contact for terms)</p>
           </div>
         </div>
-        
+
         <div class="footer-section">
           <h4 class="footer-title">Documentation</h4>
           <ul class="footer-links">
-            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer#quick-start" target="_blank">Quick Start</a></li>
-            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/USAGE_GUIDE.md" target="_blank">Usage Guide</a></li>
-            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/DEPLOYMENT.md" target="_blank">Deployment</a></li>
-            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/TESTING_GUIDE.md" target="_blank">Testing</a></li>
+            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer#quick-start" target="_blank">Quick Start</a>
+            </li>
+            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/USAGE_GUIDE.md" target="_blank">Usage
+                Guide</a></li>
+            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/DEPLOYMENT.md"
+                target="_blank">Deployment</a></li>
+            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/TESTING_GUIDE.md"
+                target="_blank">Testing</a></li>
           </ul>
         </div>
-        
+
         <div class="footer-section">
           <h4 class="footer-title">Resources</h4>
           <ul class="footer-links">
             <li><a href="https://github.com/valginer0/PGVectorRAGIndexer" target="_blank">GitHub Repository</a></li>
-            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/CHANGELOG.md" target="_blank">Changelog</a></li>
-            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/CHANGELOG.md"
+                target="_blank">Changelog</a></li>
+            <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/CONTRIBUTING.md"
+                target="_blank">Contributing</a></li>
             <li><a href="https://github.com/valginer0/PGVectorRAGIndexer/issues" target="_blank">Issue Tracker</a></li>
           </ul>
         </div>
-        
+
         <div class="footer-section">
           <h4 class="footer-title">Connect</h4>
           <ul class="footer-links">
@@ -567,15 +584,17 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
             <li><a href="https://github.com/valginer0" target="_blank">GitHub Profile</a></li>
           </ul>
           <div class="footer-social">
-            <a href="https://github.com/valginer0/PGVectorRAGIndexer" target="_blank" class="social-link" aria-label="GitHub">
+            <a href="https://github.com/valginer0/PGVectorRAGIndexer" target="_blank" class="social-link"
+              aria-label="GitHub">
               <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                <path
+                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
               </svg>
             </a>
           </div>
         </div>
       </div>
-      
+
       <div class="footer-bottom">
         <p>&copy; 2024 PGVectorRAGIndexer. All rights reserved.</p>
         <p>Version 2.1 - Production Ready ✅</p>
@@ -585,4 +604,5 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
 
   <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>

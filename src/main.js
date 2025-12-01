@@ -130,6 +130,37 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// ===== Screenshot Carousel Navigation =====
+const screenshotDots = document.querySelectorAll('.dot');
+const screenshots = document.querySelectorAll('.screenshot');
+
+screenshotDots.forEach(dot => {
+  dot.addEventListener('click', () => {
+    const screenshotNum = dot.getAttribute('data-screenshot');
+
+    // Remove active class from all dots and screenshots
+    screenshotDots.forEach(d => d.classList.remove('active'));
+    screenshots.forEach(s => s.classList.remove('active'));
+
+    // Add active class to clicked dot and corresponding screenshot
+    dot.classList.add('active');
+    const activeScreenshot = document.getElementById(`screenshot-${screenshotNum}`);
+    if (activeScreenshot) {
+      activeScreenshot.classList.add('active');
+    }
+  });
+});
+
+// Auto-rotate screenshots every 5 seconds
+let currentScreenshot = 1;
+setInterval(() => {
+  currentScreenshot = (currentScreenshot % 3) + 1;
+  const dot = document.querySelector(`.dot[data-screenshot="${currentScreenshot}"]`);
+  if (dot) {
+    dot.click();
+  }
+}, 5000);
+
 // ===== Add Hover Effect to Cards =====
 const cards = document.querySelectorAll('.feature-card, .use-case-card');
 
