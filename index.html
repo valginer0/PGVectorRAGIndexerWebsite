@@ -72,6 +72,15 @@
           <span class="badge-dot"></span>
           <span>Production Ready · v2.2</span>
         </div>
+        <a href="https://github.com/valginer0/PGVectorRAGIndexer" target="_blank" rel="noopener noreferrer"
+          class="github-stars-badge" style="display: none;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path
+              d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z" />
+          </svg>
+          <span id="github-stars">—</span>
+          <span>stars</span>
+        </a>
         <h1 class="hero-title">
           Semantic Document Search
           <span class="gradient-text"><br>Private and Local</span>
@@ -169,6 +178,14 @@
       </div>
 
       <div class="features-grid">
+        <!-- Primary Features (Always Visible) -->
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-title">100% Local & Private</h3>
+          <p class="feature-description">Your data stays on your machine. No cloud uploads, no privacy risks. AI that
+            respects your secrets.</p>
+        </div>
+
         <div class="feature-card">
           <div class="feature-icon">📄</div>
           <h3 class="feature-title">Multi-Format Support</h3>
@@ -184,10 +201,10 @@
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon">🗄️</div>
-          <h3 class="feature-title">PostgreSQL + pgvector</h3>
-          <p class="feature-description">Production-ready database with HNSW indexing, connection pooling, and health
-            monitoring.</p>
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-title">Incremental Indexing</h3>
+          <p class="feature-description">Smart updates: automatically detects changed files and only re-indexes what's
+            new. Saves time and resources.</p>
         </div>
 
         <div class="feature-card">
@@ -197,7 +214,22 @@
             data.</p>
         </div>
 
-        <!-- REST API Card Moved to Developer Section -->
+        <div class="feature-card">
+          <div class="feature-icon">🐳</div>
+          <h3 class="feature-title">Docker Ready</h3>
+          <p class="feature-description">Pre-built images on GitHub Container Registry. One-line installation for all
+            platforms.</p>
+        </div>
+      </div>
+
+      <!-- Hidden Features (Show on Toggle) -->
+      <div class="features-grid features-hidden" id="features-hidden">
+        <div class="feature-card">
+          <div class="feature-icon">🗄️</div>
+          <h3 class="feature-title">PostgreSQL + pgvector</h3>
+          <p class="feature-description">Production-ready database with HNSW indexing, connection pooling, and health
+            monitoring.</p>
+        </div>
 
         <div class="feature-card">
           <div class="feature-icon">🔄</div>
@@ -221,31 +253,21 @@
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon">🐳</div>
-          <h3 class="feature-title">Docker Ready</h3>
-          <p class="feature-description">Pre-built images on GitHub Container Registry. One-line installation for all
-            platforms.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔒</div>
-          <h3 class="feature-title">100% Local & Private</h3>
-          <p class="feature-description">Your data stays on your machine. No cloud uploads, no privacy risks. AI that
-            respects your secrets.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h3 class="feature-title">Incremental Indexing</h3>
-          <p class="feature-description">Smart updates: automatically detects changed files and only re-indexes what's
-            new. Saves time and resources.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">🔍</div>
+          <div class="feature-icon">🃏</div>
           <h3 class="feature-title">Wildcard Search</h3>
           <p class="feature-description">Flexible filtering. Find everything matching a document type with simple
             wildcard queries.</p>
         </div>
+      </div>
+
+      <div class="features-toggle" style="text-align: center; margin-top: var(--spacing-xl);">
+        <button class="btn btn-secondary" id="toggle-features">
+          <span id="toggle-features-text">Show All Features</span>
+          <svg id="toggle-features-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+            stroke-width="2" style="transition: transform 0.3s ease;">
+            <path d="M4 6l4 4 4-4" />
+          </svg>
+        </button>
       </div>
     </div>
   </section>
