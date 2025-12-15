@@ -39,8 +39,11 @@
         </a>
         <div class="nav-links">
           <a href="#features" class="nav-link">Features</a>
-          <a href="#quickstart" class="nav-link">Quick Start</a>
+          <a href="#usecases" class="nav-link">Use Cases</a>
           <a href="#desktop" class="nav-link">Desktop App</a>
+          <a href="#teams" class="nav-link">Teams</a>
+          <a href="#quickstart" class="nav-link">Quick Start</a>
+          <a href="#developers" class="nav-link">Developers</a>
           <a href="https://github.com/valginer0/PGVectorRAGIndexer" target="_blank" class="nav-link nav-link-primary">
             <span>GitHub</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -250,7 +253,7 @@
 
       <div class="use-cases-grid">
         <div class="use-case-card">
-          <div class="use-case-icon">🤖</div>
+          <div class="use-case-icon">🔍</div>
           <h3>Private Document Search</h3>
           <p>Find exact information within your documents instantly using natural language, without relying on external
             services.</p>
@@ -285,8 +288,9 @@
           <!-- Removed Windows Badge for cross-platform inclusion -->
           <h2 class="section-title">Your Personal Search Engine</h2>
           <p class="desktop-description">
-            A powerful, native application that gives you complete control over your document library.
-            Available for Windows, macOS, and Linux.
+            Desktop GUI + local engine (works on Windows/macOS/Linux).
+            <br><span style="font-size: 0.9rem; opacity: 0.8;">(Windows-first installer; macOS/Linux currently via
+              Docker/CLI or manual setup)</span>
           </p>
 
           <div class="desktop-features">
@@ -322,6 +326,16 @@
               </div>
             </div>
           </div>
+
+          <div class="hero-buttons" style="justify-content: flex-start; margin-top: 2rem;">
+            <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/INSTALL_DESKTOP_APP.md" target="_blank"
+              class="btn btn-primary">
+              <span>Install the Desktop App</span>
+            </a>
+            <a href="#quickstart" class="btn btn-secondary">
+              <span>Quick Start</span>
+            </a>
+          </div>
         </div>
 
         <div class="desktop-visual">
@@ -339,6 +353,37 @@
               <button class="dot" data-screenshot="3" aria-label="View Documents tab"></button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- For Teams Section (Moved) -->
+  <section id="teams"
+    style="background: var(--color-bg-secondary); border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">For Teams & Organizations</h2>
+        <p class="section-description">Deploy privately on an internal machine or server</p>
+      </div>
+      <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <ul
+          style="list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; margin-bottom: 2.5rem; color: var(--color-text-secondary); font-size: 1.1rem;">
+          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
+              style="color: var(--color-accent-green);">✓</span> Keep sensitive documents off the cloud</li>
+          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
+              style="color: var(--color-accent-green);">✓</span> Optional API for integration</li>
+          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
+              style="color: var(--color-accent-green);">✓</span> Commercial licensing available</li>
+        </ul>
+        <div class="hero-buttons" style="justify-content: center;">
+          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/DEPLOYMENT.md" target="_blank"
+            class="btn btn-secondary">
+            <span>Team Deployment</span>
+          </a>
+          <a href="mailto:valginer0@gmail.com" class="btn btn-primary">
+            <span>Commercial License</span>
+          </a>
         </div>
       </div>
     </div>
@@ -446,39 +491,12 @@
 
   <!-- Features Section -->
 
-  <!-- For Teams Section -->
-  <section id="teams"
-    style="background: var(--color-bg-secondary); border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">For Teams & Organizations</h2>
-        <p class="section-description">Deploy privately on an internal machine or server</p>
-      </div>
-      <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-        <ul
-          style="list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; margin-bottom: 2.5rem; color: var(--color-text-secondary); font-size: 1.1rem;">
-          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
-              style="color: var(--color-accent-green);">✓</span> Keep sensitive documents off the cloud</li>
-          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
-              style="color: var(--color-accent-green);">✓</span> Optional API for integration</li>
-          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
-              style="color: var(--color-accent-green);">✓</span> Commercial licensing available</li>
-        </ul>
-        <div class="hero-buttons" style="justify-content: center;">
-          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/DEPLOYMENT.md" target="_blank"
-            class="btn btn-secondary">
-            <span>Team Deployment</span>
-          </a>
-          <a href="mailto:valginer0@gmail.com" class="btn btn-primary">
-            <span>Commercial License</span>
-          </a>
-        </div>
-      </div>
-    </div>
+  </div>
+  </div>
   </section>
 
   <!-- Developer Mode Section -->
-  <section id="api" class="api-section">
+  <section id="developers" class="api-section">
     <div class="container">
       <div class="section-header">
         <h2 class="section-title">Developer Mode / Optional API</h2>
@@ -498,14 +516,14 @@
           <div class="hero-buttons" style="justify-content: center; gap: 1rem; flex-wrap: wrap;">
             <div style="text-align: center;">
               <a href="http://localhost:8000" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem;">
-                <span>Open Web UI (local)</span>
+                <span>Open Web UI (http://localhost:8000)</span>
               </a>
               <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7; max-width: 200px;">Works only after you
                 install and run PGVectorRAGIndexer locally.</p>
             </div>
             <a href="http://localhost:8000/docs" target="_blank" class="btn btn-secondary"
               style="font-size: 0.9rem; height: fit-content;">
-              <span>API Documentation</span>
+              <span>API Docs (http://localhost:8000/docs)</span>
             </a>
           </div>
         </div>
