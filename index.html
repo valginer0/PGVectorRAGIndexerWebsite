@@ -41,7 +41,6 @@
           <a href="#features" class="nav-link">Features</a>
           <a href="#quickstart" class="nav-link">Quick Start</a>
           <a href="#desktop" class="nav-link">Desktop App</a>
-          <a href="#api" class="nav-link">API</a>
           <a href="https://github.com/valginer0/PGVectorRAGIndexer" target="_blank" class="nav-link nav-link-primary">
             <span>GitHub</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -49,6 +48,7 @@
                 d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
             </svg>
           </a>
+          <a href="#api" class="nav-link">API</a>
         </div>
       </div>
     </div>
@@ -182,7 +182,8 @@
         <div class="feature-card">
           <div class="feature-icon">🖥️</div>
           <h3 class="feature-title">Desktop Application</h3>
-          <p class="feature-description">Native Windows app with file picker, bulk operations, backup/restore, and
+          <p class="feature-description">Native app for Windows, macOS, and Linux with file picker, bulk operations,
+            backup/restore, and
             Docker control.</p>
         </div>
 
@@ -427,6 +428,37 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
     </div>
   </section>
 
+  <!-- For Teams Section -->
+  <section id="teams"
+    style="background: var(--color-bg-secondary); border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">For Teams & Organizations</h2>
+        <p class="section-description">Deploy privately on an internal machine or server</p>
+      </div>
+      <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <ul
+          style="list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; margin-bottom: 2.5rem; color: var(--color-text-secondary); font-size: 1.1rem;">
+          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
+              style="color: var(--color-accent-green);">✓</span> Keep sensitive documents off the cloud</li>
+          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
+              style="color: var(--color-accent-green);">✓</span> Optional API for integration</li>
+          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
+              style="color: var(--color-accent-green);">✓</span> Commercial licensing available</li>
+        </ul>
+        <div class="hero-buttons" style="justify-content: center;">
+          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/DEPLOYMENT.md" target="_blank"
+            class="btn btn-secondary">
+            <span>Team Deployment</span>
+          </a>
+          <a href="mailto:valginer0@gmail.com" class="btn btn-primary">
+            <span>Commercial License</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Developer Mode Section -->
   <section id="api" class="api-section">
     <div class="container">
@@ -438,14 +470,23 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
       <div class="api-content">
         <div class="developer-info" style="margin-bottom: 3rem; text-align: center;">
           <p style="margin-bottom: 1rem;">
-            The core engine includes a <strong>REST API</strong> and a <strong>Legacy Web UI</strong> for developers who
+            The core engine includes a <strong>REST API</strong> and a <strong>Developer Web UI (local)</strong> for
+            developers who
             prefer browser-based access.
           </p>
-          <div class="hero-buttons" style="justify-content: center; gap: 1rem;">
-            <a href="http://localhost:8000" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem;">
-              <span>Open Web UI</span>
-            </a>
-            <a href="http://localhost:8000/docs" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem;">
+          <p style="margin-bottom: 2rem; font-size: 0.9rem; opacity: 0.8;">
+            By default it binds to localhost (your machine only).
+          </p>
+          <div class="hero-buttons" style="justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <div style="text-align: center;">
+              <a href="http://localhost:8000" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem;">
+                <span>Open Web UI (local)</span>
+              </a>
+              <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7; max-width: 200px;">Works only after you
+                install and run PGVectorRAGIndexer locally.</p>
+            </div>
+            <a href="http://localhost:8000/docs" target="_blank" class="btn btn-secondary"
+              style="font-size: 0.9rem; height: fit-content;">
               <span>API Documentation</span>
             </a>
           </div>
@@ -549,7 +590,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
     <div class="container">
       <div class="section-header">
         <h2 class="section-title">Common Ways People Use It</h2>
-        <p class="section-description">From research to enterprise knowledge management</p>
+        <p class="section-description">For personal and professional document libraries.</p>
       </div>
 
       <div class="use-cases-grid">
@@ -591,7 +632,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
             <span class="logo-text">PGVectorRAG</span>
           </div>
           <p class="footer-description">
-            Production-ready semantic document search for RAG applications.
+            Semantic search that stays on your computer.
           </p>
           <div class="footer-license">
             <p><strong>Dual Licensed:</strong></p>
