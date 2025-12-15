@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO Meta Tags -->
-  <title>PGVectorRAGIndexer - Production-Ready Semantic Document Search</title>
+  <title>PGVectorRAGIndexer — Private Local Semantic Document Search</title>
   <meta name="description"
-    content="A production-ready semantic document search system using PostgreSQL with pgvector. Built for RAG applications with enterprise-grade features, REST API, and modern desktop app.">
+    content="Offline desktop app for meaning-based search across your documents. No cloud uploads, no accounts—privacy-first.">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="PGVectorRAGIndexer - Semantic Document Search">
-  <meta property="og:description" content="Production-ready RAG system with pgvector, REST API, and desktop app">
+  <meta property="og:title" content="PGVectorRAGIndexer — Private, Local Semantic Search">
+  <meta property="og:description" content="Search your documents by meaning. Runs on your computer. No cloud uploads.">
   <meta property="og:type" content="website">
 
   <!-- Favicon -->
@@ -61,7 +61,7 @@
       <div class="hero-content">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          <span>Version 2.2</span>
+          <span>Production Ready · v2.2</span>
         </div>
         <h1 class="hero-title">
           Semantic Document Search
@@ -153,8 +153,8 @@
   <section id="features" class="features">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">Enterprise-Grade Features</h2>
-        <p class="section-description">Everything you need for production RAG applications</p>
+        <h2 class="section-title">Powerful Features — Still Local</h2>
+        <p class="section-description">Built for real personal document libraries (and teams who value privacy)</p>
       </div>
 
       <div class="features-grid">
@@ -186,12 +186,7 @@
             Docker control.</p>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h3 class="feature-title">REST API</h3>
-          <p class="feature-description">FastAPI-based HTTP API with automatic OpenAPI docs, CORS support, and async
-            operations.</p>
-        </div>
+        <!-- REST API Card Moved to Developer Section -->
 
         <div class="feature-card">
           <div class="feature-icon">🔄</div>
@@ -337,39 +332,7 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
           </div>
         </div>
 
-        <div class="services-info">
-          <h3>Services Available After Installation</h3>
-          <div class="services-grid">
-            <div class="service-item">
-              <div class="service-icon">🌐</div>
-              <div class="service-details">
-                <div class="service-name">Web UI</div>
-                <a href="http://localhost:8000" class="service-url">http://localhost:8000</a>
-              </div>
-            </div>
-            <div class="service-item">
-              <div class="service-icon">📚</div>
-              <div class="service-details">
-                <div class="service-name">API Docs</div>
-                <a href="http://localhost:8000/docs" class="service-url">http://localhost:8000/docs</a>
-              </div>
-            </div>
-            <div class="service-item">
-              <div class="service-icon">🔧</div>
-              <div class="service-details">
-                <div class="service-name">REST API</div>
-                <a href="http://localhost:8000/api" class="service-url">http://localhost:8000/api</a>
-              </div>
-            </div>
-            <div class="service-item">
-              <div class="service-icon">🗄️</div>
-              <div class="service-details">
-                <div class="service-name">Database</div>
-                <span class="service-url">localhost:5432</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- Services List Moved to Developer Section -->
       </div>
     </div>
   </section>
@@ -457,15 +420,30 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
     </div>
   </section>
 
-  <!-- API Section -->
+  <!-- Developer Mode Section -->
   <section id="api" class="api-section">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">Powerful REST API</h2>
-        <p class="section-description">FastAPI-based HTTP API with automatic OpenAPI documentation</p>
+        <h2 class="section-title">Developer Mode / Optional API</h2>
+        <p class="section-description">For power users and developers building custom integrations</p>
       </div>
 
       <div class="api-content">
+        <div class="developer-info" style="margin-bottom: 3rem; text-align: center;">
+          <p style="margin-bottom: 1rem;">
+            The core engine includes a <strong>REST API</strong> and a <strong>Legacy Web UI</strong> for developers who
+            prefer browser-based access.
+          </p>
+          <div class="hero-buttons" style="justify-content: center; gap: 1rem;">
+            <a href="http://localhost:8000" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem;">
+              <span>Open Web UI</span>
+            </a>
+            <a href="http://localhost:8000/docs" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem;">
+              <span>API Documentation</span>
+            </a>
+          </div>
+        </div>
+
         <div class="api-examples">
           <div class="api-example">
             <div class="api-example-header">
@@ -563,16 +541,16 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
   <section id="usecases" class="use-cases">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">Built for Real-World Applications</h2>
+        <h2 class="section-title">Common Ways People Use It</h2>
         <p class="section-description">From research to enterprise knowledge management</p>
       </div>
 
       <div class="use-cases-grid">
         <div class="use-case-card">
           <div class="use-case-icon">🤖</div>
-          <h3>RAG Applications</h3>
-          <p>Power your AI chatbots and assistants with semantic document retrieval for accurate, context-aware
-            responses.</p>
+          <h3>Private Document Search</h3>
+          <p>Find exact information within your documents instantly using natural language, without relying on external
+            services.</p>
         </div>
 
         <div class="use-case-card">
