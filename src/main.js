@@ -210,6 +210,40 @@ cards.forEach(card => {
   });
 });
 
+// ===== Features Toggle =====
+const toggleFeaturesBtn = document.getElementById('toggle-features');
+const hiddenFeatures = document.getElementById('features-hidden');
+const toggleFeaturesText = document.getElementById('toggle-features-text');
+const toggleFeaturesIcon = document.getElementById('toggle-features-icon');
+
+if (toggleFeaturesBtn && hiddenFeatures) {
+  toggleFeaturesBtn.addEventListener('click', () => {
+    const isVisible = hiddenFeatures.classList.toggle('visible');
+    toggleFeaturesText.textContent = isVisible ? 'Show Less' : 'Show All Features';
+    toggleFeaturesIcon.style.transform = isVisible ? 'rotate(180deg)' : 'rotate(0)';
+  });
+}
+
+// ===== GitHub Stars Badge =====
+async function fetchGitHubStars() {
+  const starsElement = document.getElementById('github-stars');
+  if (!starsElement) return;
+
+  try {
+    const response = await fetch('https://api.github.com/repos/valginer0/PGVectorRAGIndexer');
+    if (response.ok) {
+      const data = await response.json();
+      const stars = data.stargazers_count;
+      starsElement.textContent = stars >= 1000 ? `${(stars / 1000).toFixed(1)}k` : stars;
+      starsElement.parentElement.style.display = 'inline-flex';
+    }
+  } catch (err) {
+    console.log('Could not fetch GitHub stars:', err);
+  }
+}
+
+fetchGitHubStars();
+
 // ===== Console Welcome Message =====
 console.log('%c🔍 PGVectorRAGIndexer', 'font-size: 20px; font-weight: bold; color: #667eea;');
 console.log('%cProduction-ready semantic document search for RAG applications', 'font-size: 12px; color: #a0a0b8;');

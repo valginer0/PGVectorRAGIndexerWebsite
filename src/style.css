@@ -231,6 +231,33 @@ body {
   animation: fadeInUp 0.6s ease;
 }
 
+.github-stars-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  margin-left: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+  transition: all var(--transition-fast);
+  animation: fadeInUp 0.6s ease 0.1s both;
+}
+
+.github-stars-badge:hover {
+  background: var(--glass-border);
+  color: var(--color-text-primary);
+}
+
+.github-stars-badge svg {
+  color: #f1c40f;
+}
+
 .badge-dot {
   width: 8px;
   height: 8px;
@@ -405,6 +432,16 @@ section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--spacing-lg);
+}
+
+.features-hidden {
+  display: none;
+  margin-top: var(--spacing-lg);
+}
+
+.features-hidden.visible {
+  display: grid;
+  animation: fadeIn 0.3s ease;
 }
 
 .feature-card {
