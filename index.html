@@ -240,6 +240,43 @@
     </div>
   </section>
 
+  <!-- Use Cases Section (Moved) -->
+  <section id="usecases" class="use-cases">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Common Ways People Use It</h2>
+        <p class="section-description">For personal and professional document libraries.</p>
+      </div>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <div class="use-case-icon">🤖</div>
+          <h3>Private Document Search</h3>
+          <p>Find exact information within your documents instantly using natural language, without relying on external
+            services.</p>
+        </div>
+
+        <div class="use-case-card">
+          <div class="use-case-icon">📚</div>
+          <h3>Knowledge Management</h3>
+          <p>Build enterprise knowledge bases with semantic search across policies, procedures, and documentation.</p>
+        </div>
+
+        <div class="use-case-card">
+          <div class="use-case-icon">🔬</div>
+          <h3>Research & Analysis</h3>
+          <p>Index research papers, reports, and datasets for quick semantic search and discovery.</p>
+        </div>
+
+        <div class="use-case-card">
+          <div class="use-case-icon">💼</div>
+          <h3>Document Management</h3>
+          <p>Organize and search contracts, invoices, resumes, and business documents with metadata filtering.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Desktop Interface Section (Renamed & Moved) -->
   <section id="desktop" class="desktop-app">
     <div class="container">
@@ -319,6 +356,7 @@
         <div class="platform-tabs">
           <button class="platform-tab active" data-platform="linux">Linux / macOS (Docker CLI)</button>
           <button class="platform-tab" data-platform="windows">Windows (Desktop App)</button>
+          <button class="platform-tab" data-platform="manual">Manual / Full Guide</button>
         </div>
 
         <div class="platform-content active" data-platform="linux">
@@ -377,6 +415,24 @@
             <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
               <em>Prefer headless Docker? Use <code>docker-run.ps1</code> instead.</em>
             </p>
+          </div>
+        </div>
+
+        <div class="platform-content" data-platform="manual">
+          <div class="quickstart-info" style="text-align: center; padding: 3rem 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📖</div>
+            <p><strong>Available for all platforms (Windows, macOS, Linux)</strong></p>
+            <p style="opacity: 0.8; max-width: 500px; margin: 0 auto 2rem;">
+              For manual setup instructions, troubleshooting, and advanced configuration, consult the full installation
+              guide.
+            </p>
+            <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/INSTALL_DESKTOP_APP.md" target="_blank"
+              class="btn btn-secondary">
+              <span>View Full Installation Guide</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 12l4-4-4-4" />
+              </svg>
+            </a>
           </div>
         </div>
 
@@ -547,42 +603,7 @@
     </div>
   </section>
 
-  <!-- Use Cases Section -->
-  <section id="usecases" class="use-cases">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">Common Ways People Use It</h2>
-        <p class="section-description">For personal and professional document libraries.</p>
-      </div>
 
-      <div class="use-cases-grid">
-        <div class="use-case-card">
-          <div class="use-case-icon">🤖</div>
-          <h3>Private Document Search</h3>
-          <p>Find exact information within your documents instantly using natural language, without relying on external
-            services.</p>
-        </div>
-
-        <div class="use-case-card">
-          <div class="use-case-icon">📚</div>
-          <h3>Knowledge Management</h3>
-          <p>Build enterprise knowledge bases with semantic search across policies, procedures, and documentation.</p>
-        </div>
-
-        <div class="use-case-card">
-          <div class="use-case-icon">🔬</div>
-          <h3>Research & Analysis</h3>
-          <p>Index research papers, reports, and datasets for quick semantic search and discovery.</p>
-        </div>
-
-        <div class="use-case-card">
-          <div class="use-case-icon">💼</div>
-          <h3>Document Management</h3>
-          <p>Organize and search contracts, invoices, resumes, and business documents with metadata filtering.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- Footer -->
   <footer class="footer">
