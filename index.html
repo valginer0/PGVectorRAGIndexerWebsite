@@ -250,9 +250,8 @@
 
       <div class="quickstart-content">
         <div class="platform-tabs">
-          <button class="platform-tab active" data-platform="linux">Linux / macOS / WSL</button>
-          <button class="platform-tab" data-platform="windows">Windows</button>
-          <button class="platform-tab" data-platform="desktop">Desktop App</button>
+          <button class="platform-tab active" data-platform="linux">Linux / macOS (Docker CLI)</button>
+          <button class="platform-tab" data-platform="windows">Windows (Desktop App)</button>
         </div>
 
         <div class="platform-content active" data-platform="linux">
@@ -286,32 +285,6 @@
             <div class="code-header">
               <span class="code-language">powershell</span>
               <button class="copy-btn"
-                data-copy='Invoke-WebRequest -Uri "https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/docker-run.ps1" -OutFile "$env:TEMP\docker-run.ps1"; PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"'>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="5" y="5" width="9" height="9" rx="1" />
-                  <path d="M3 11V3a1 1 0 0 1 1-1h8" />
-                </svg>
-                <span>Copy</span>
-              </button>
-            </div>
-            <pre><code>Invoke-WebRequest -Uri "https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/docker-run.ps1" -OutFile "$env:TEMP\docker-run.ps1"
-PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
-          </div>
-          <div class="quickstart-info">
-            <p><strong>Requirements:</strong></p>
-            <ul>
-              <li>Docker Desktop or Rancher Desktop</li>
-              <li>PowerShell (included with Windows)</li>
-              <li>No WSL required - runs natively on Windows</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="platform-content" data-platform="desktop">
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-language">powershell</span>
-              <button class="copy-btn"
                 data-copy="irm https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/bootstrap_desktop_app.ps1 | iex">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="5" y="5" width="9" height="9" rx="1" />
@@ -323,13 +296,15 @@ PowerShell -ExecutionPolicy Bypass -File "$env:TEMP\docker-run.ps1"</code></pre>
             <pre><code>irm https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/bootstrap_desktop_app.ps1 | iex</code></pre>
           </div>
           <div class="quickstart-info">
-            <p><strong>Desktop App Features:</strong></p>
+            <p><strong>Desktop App (Recommended):</strong></p>
             <ul>
-              <li>Native Windows file picker - access files anywhere</li>
-              <li>Full path preservation (e.g., C:\Projects\file.txt)</li>
-              <li>Document types and bulk operations</li>
-              <li>Built-in Docker container control</li>
+              <li>Installs Python, PySide6, and Docker dependencies automatically</li>
+              <li>Native Windows interface with One-Click Launch icon</li>
+              <li>Includes full backup/restore and document management</li>
             </ul>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+              <em>Prefer headless Docker? Use <code>docker-run.ps1</code> instead.</em>
+            </p>
           </div>
         </div>
 
