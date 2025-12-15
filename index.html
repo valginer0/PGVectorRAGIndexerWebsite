@@ -240,6 +240,73 @@
     </div>
   </section>
 
+  <!-- Desktop Interface Section (Renamed & Moved) -->
+  <section id="desktop" class="desktop-app">
+    <div class="container">
+      <div class="desktop-content">
+        <div class="desktop-text">
+          <!-- Removed Windows Badge for cross-platform inclusion -->
+          <h2 class="section-title">Your Personal Search Engine</h2>
+          <p class="desktop-description">
+            A powerful, native application that gives you complete control over your document library.
+            Available for Windows, macOS, and Linux.
+          </p>
+
+          <div class="desktop-features">
+            <div class="desktop-feature">
+              <div class="desktop-feature-icon">📁</div>
+              <div class="desktop-feature-content">
+                <h4>Native File Management</h4>
+                <p>Access your local files directly without copying to shared folders</p>
+              </div>
+            </div>
+
+            <div class="desktop-feature">
+              <div class="desktop-feature-icon">🔒</div>
+              <div class="desktop-feature-content">
+                <h4>Private & Secure</h4>
+                <p>Everything runs locally. Your data never leaves your machine.</p>
+              </div>
+            </div>
+
+            <div class="desktop-feature">
+              <div class="desktop-feature-icon">🏷️</div>
+              <div class="desktop-feature-content">
+                <h4>Smart Organization</h4>
+                <p>Custom document types with rich metadata filtering</p>
+              </div>
+            </div>
+
+            <div class="desktop-feature">
+              <div class="desktop-feature-icon">🗑️</div>
+              <div class="desktop-feature-content">
+                <h4>Full Control</h4>
+                <p>Bulk operations, backups, restores, and undo capabilities</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="desktop-visual">
+          <div class="desktop-screenshots">
+            <div class="screenshot-container">
+              <img src="/desktop-app-upload.png" alt="Desktop App Upload Tab" class="screenshot active"
+                id="screenshot-1">
+              <img src="/desktop-app-search.png" alt="Desktop App Search Tab" class="screenshot" id="screenshot-2">
+              <img src="/desktop-app-documents.png" alt="Desktop App Documents Tab" class="screenshot"
+                id="screenshot-3">
+            </div>
+            <div class="screenshot-dots">
+              <button class="dot active" data-screenshot="1" aria-label="View Upload tab"></button>
+              <button class="dot" data-screenshot="2" aria-label="View Search tab"></button>
+              <button class="dot" data-screenshot="3" aria-label="View Documents tab"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Quick Start Section -->
   <section id="quickstart" class="quickstart">
     <div class="container">
@@ -277,6 +344,11 @@
               <li>Initializes database schema and starts API server</li>
               <li>No repository clone or Python installation needed</li>
             </ul>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+              <em>Looking for the GUI? See the <a
+                  href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/INSTALL_DESKTOP_APP.md#linux--macos-installation"
+                  target="_blank" style="color: var(--color-accent-cyan);">Linux/Mac Installation Guide</a>.</em>
+            </p>
           </div>
         </div>
 
@@ -313,95 +385,10 @@
     </div>
   </section>
 
-  <!-- Desktop App Section -->
-  <section id="desktop" class="desktop-app">
-    <div class="container">
-      <div class="desktop-content">
-        <div class="desktop-text">
-          <div class="section-badge">Windows Desktop App</div>
-          <h2 class="section-title">Native Windows Experience</h2>
-          <p class="desktop-description">
-            A powerful desktop application built with Qt/Python, designed specifically for Windows users who want a
-            native file management experience.
-          </p>
+  <!-- Plain English Section -->
 
-          <div class="desktop-features">
-            <div class="desktop-feature">
-              <div class="desktop-feature-icon">📁</div>
-              <div class="desktop-feature-content">
-                <h4>Native File Picker</h4>
-                <p>Access Windows files directly without copying to shared folders</p>
-              </div>
-            </div>
 
-            <div class="desktop-feature">
-              <div class="desktop-feature-icon">🔒</div>
-              <div class="desktop-feature-content">
-                <h4>Full Path Preservation</h4>
-                <p>Store complete file paths like C:\Projects\document.pdf</p>
-              </div>
-            </div>
-
-            <div class="desktop-feature">
-              <div class="desktop-feature-icon">🏷️</div>
-              <div class="desktop-feature-content">
-                <h4>Document Organization</h4>
-                <p>Custom types (policy, resume, report) with metadata filtering</p>
-              </div>
-            </div>
-
-            <div class="desktop-feature">
-              <div class="desktop-feature-icon">🗑️</div>
-              <div class="desktop-feature-content">
-                <h4>Bulk Operations</h4>
-                <p>Preview, export backup, delete, and undo with one click</p>
-              </div>
-            </div>
-
-            <div class="desktop-feature">
-              <div class="desktop-feature-icon">🐳</div>
-              <div class="desktop-feature-content">
-                <h4>Docker Control</h4>
-                <p>Start and stop containers directly from the application</p>
-              </div>
-            </div>
-            <div class="desktop-feature">
-              <div class="desktop-feature-icon">🚀</div>
-              <div class="desktop-feature-content">
-                <h4>One-Click Launch</h4>
-                <p>Auto-creates a desktop shortcut for instant access (no terminal needed)</p>
-              </div>
-            </div>
-          </div>
-
-          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/INSTALL_DESKTOP_APP.md" target="_blank"
-            class="btn btn-primary">
-            <span>Installation Guide</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 12l4-4-4-4" />
-            </svg>
-          </a>
-        </div>
-
-        <div class="desktop-visual">
-          <div class="desktop-screenshots">
-            <div class="screenshot-container">
-              <img src="/desktop-app-upload.png" alt="Desktop App Upload Tab" class="screenshot active"
-                id="screenshot-1">
-              <img src="/desktop-app-search.png" alt="Desktop App Search Tab" class="screenshot" id="screenshot-2">
-              <img src="/desktop-app-documents.png" alt="Desktop App Documents Tab" class="screenshot"
-                id="screenshot-3">
-            </div>
-            <div class="screenshot-dots">
-              <button class="dot active" data-screenshot="1" aria-label="View Upload tab"></button>
-              <button class="dot" data-screenshot="2" aria-label="View Search tab"></button>
-              <button class="dot" data-screenshot="3" aria-label="View Documents tab"></button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- Features Section -->
 
   <!-- For Teams Section -->
   <section id="teams"
