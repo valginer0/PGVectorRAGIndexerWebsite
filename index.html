@@ -292,13 +292,17 @@
       </div>
 
       <div class="quickstart-content">
-        <div class="platform-tabs">
-          <button class="platform-tab active" data-platform="linux">Linux / macOS (Docker CLI)</button>
-          <button class="platform-tab" data-platform="windows">Windows (Desktop App)</button>
-          <button class="platform-tab" data-platform="manual">Manual / Full Guide</button>
+        <div class="platform-tabs" role="tablist">
+          <button class="platform-tab active" data-platform="linux" role="tab" aria-controls="platform-linux"
+            aria-selected="true" id="tab-linux">Linux / macOS (Docker CLI)</button>
+          <button class="platform-tab" data-platform="windows" role="tab" aria-controls="platform-windows"
+            aria-selected="false" id="tab-windows">Windows (Desktop App)</button>
+          <button class="platform-tab" data-platform="manual" role="tab" aria-controls="platform-manual"
+            aria-selected="false" id="tab-manual">Manual / Full Guide</button>
         </div>
 
-        <div class="platform-content active" data-platform="linux">
+        <div class="platform-content active" data-platform="linux" id="platform-linux" role="tabpanel"
+          aria-labelledby="tab-linux">
           <div class="code-block">
             <div class="code-header">
               <span class="code-language">bash</span>
@@ -330,7 +334,8 @@
           </div>
         </div>
 
-        <div class="platform-content" data-platform="windows">
+        <div class="platform-content" data-platform="windows" id="platform-windows" role="tabpanel"
+          aria-labelledby="tab-windows">
           <div class="code-block">
             <div class="code-header">
               <span class="code-language">powershell</span>
@@ -358,7 +363,8 @@
           </div>
         </div>
 
-        <div class="platform-content" data-platform="manual">
+        <div class="platform-content" data-platform="manual" id="platform-manual" role="tabpanel"
+          aria-labelledby="tab-manual">
           <div class="quickstart-info" style="text-align: center; padding: 3rem 1rem;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">📖</div>
             <p><strong>Available for all platforms (Windows, macOS, Linux)</strong></p>
