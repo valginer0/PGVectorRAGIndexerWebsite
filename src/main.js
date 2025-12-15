@@ -43,12 +43,16 @@ platformTabs.forEach(tab => {
   tab.addEventListener('click', () => {
     const platform = tab.getAttribute('data-platform');
 
-    // Remove active class from all tabs and contents
-    platformTabs.forEach(t => t.classList.remove('active'));
+    // Remove active class and update aria-selected for all tabs
+    platformTabs.forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
     platformContents.forEach(c => c.classList.remove('active'));
 
-    // Add active class to clicked tab and corresponding content
+    // Add active class and update aria-selected for clicked tab
     tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
     const activeContent = document.querySelector(`.platform-content[data-platform="${platform}"]`);
     if (activeContent) {
       activeContent.classList.add('active');
