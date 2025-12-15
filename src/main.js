@@ -153,8 +153,9 @@ screenshotDots.forEach(dot => {
 
 // Auto-rotate screenshots every 5 seconds
 let currentScreenshot = 1;
+const totalScreenshots = 6;
 setInterval(() => {
-  currentScreenshot = (currentScreenshot % 3) + 1;
+  currentScreenshot = (currentScreenshot % totalScreenshots) + 1;
   const dot = document.querySelector(`.dot[data-screenshot="${currentScreenshot}"]`);
   if (dot) {
     dot.click();
