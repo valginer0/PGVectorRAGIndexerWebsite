@@ -969,6 +969,71 @@ code {
   margin-bottom: var(--spacing-2xl);
 }
 
+/* ===== Email Signup Section ===== */
+.email-signup {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.05) 100%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.email-signup-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+
+.email-signup-text h3 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+}
+
+.email-signup-text p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  max-width: 400px;
+}
+
+.email-signup-form {
+  flex: 1;
+  min-width: 300px;
+  max-width: 450px;
+}
+
+.signup-form-placeholder {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.signup-form-placeholder input:focus {
+  outline: none;
+  border-color: var(--color-accent-purple);
+}
+
+@media (max-width: 768px) {
+  .email-signup-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .email-signup-text p {
+    max-width: none;
+  }
+
+  .email-signup-form {
+    max-width: none;
+    width: 100%;
+  }
+
+  .signup-form-placeholder {
+    flex-direction: column;
+  }
+}
+
 .footer-section {
   display: flex;
   flex-direction: column;
