@@ -185,16 +185,60 @@ screenshotDots.forEach(dot => {
   });
 });
 
-// Auto-rotate screenshots every 5 seconds
+// Auto-rotate screenshots with pause functionality
 let currentScreenshot = 1;
 const totalScreenshots = 6;
-setInterval(() => {
+let carouselInterval = null;
+let carouselPaused = false;
+
+// Check if user prefers reduced motion
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function rotateScreenshot() {
+  if (carouselPaused || prefersReducedMotion) return;
+
   currentScreenshot = (currentScreenshot % totalScreenshots) + 1;
   const dot = document.querySelector(`.dot[data-screenshot="${currentScreenshot}"]`);
   if (dot) {
     dot.click();
   }
-}, 5000);
+}
+
+function startCarousel() {
+  if (!carouselInterval && !prefersReducedMotion) {
+    carouselInterval = setInterval(rotateScreenshot, 5000);
+  }
+}
+
+function stopCarousel() {
+  if (carouselInterval) {
+    clearInterval(carouselInterval);
+    carouselInterval = null;
+  }
+}
+
+// Start carousel on load
+startCarousel();
+
+// Pause on hover
+const screenshotContainer = document.querySelector('.desktop-screenshots');
+if (screenshotContainer) {
+  screenshotContainer.addEventListener('mouseenter', () => {
+    carouselPaused = true;
+  });
+  screenshotContainer.addEventListener('mouseleave', () => {
+    carouselPaused = false;
+  });
+}
+
+// Pause when tab is hidden
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopCarousel();
+  } else {
+    startCarousel();
+  }
+});
 
 // ===== Add Hover Effect to Cards =====
 const cards = document.querySelectorAll('.feature-card, .use-case-card');
