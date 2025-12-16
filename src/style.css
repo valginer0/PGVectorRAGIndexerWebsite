@@ -29,6 +29,11 @@
   --color-accent-cyan: #00f2fe;
   --color-accent-green: #00d4aa;
 
+  /* Alias variables (for inline style compatibility) */
+  --primary: var(--color-accent-purple);
+  --primary-rgb: 102, 126, 234;
+  --text-primary: var(--color-text-primary);
+
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
@@ -1289,4 +1294,17 @@ code {
 .fade-in.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ===== Accessibility: Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
