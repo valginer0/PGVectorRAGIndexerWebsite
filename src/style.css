@@ -941,6 +941,47 @@ code {
   border-radius: 6px;
 }
 
+/* ===== Teams Section ===== */
+.teams-section {
+  background: var(--color-bg-secondary);
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.teams-content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.teams-features-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+}
+
+.teams-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.teams-feature-check {
+  color: var(--color-accent-green);
+}
+
+.teams-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
 /* ===== API Section ===== */
 .api-section {
   background: var(--color-bg-primary);
