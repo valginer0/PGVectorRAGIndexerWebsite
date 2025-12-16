@@ -6,12 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO Meta Tags -->
-  <title>PGVectorRAGIndexer — Private Local Semantic Document Search</title>
+  <title>PGVectorRAG — Private Local Semantic Document Search</title>
   <meta name="description"
     content="Offline desktop app for meaning-based search across your documents. No cloud uploads, no accounts—privacy-first.">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="PGVectorRAGIndexer — Private, Local Semantic Search">
+  <meta property="og:title" content="PGVectorRAG — Private, Local Semantic Search">
   <meta property="og:description" content="Search your documents by meaning. Runs on your computer. No cloud uploads.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="/social-preview.png">
@@ -106,7 +106,7 @@
             Not a chatbot. Not a cloud service.
           </p>
           <p class="hero-clarification-text">
-            <strong>PGVectorRAGIndexer</strong> is a desktop application that runs entirely on your computer.
+            <strong>PGVectorRAG</strong> is a desktop application that runs entirely on your computer.
             It helps you search and explore your own documents by meaning, even when you don't remember the exact words.
           </p>
           <p class="hero-clarification-example">
@@ -472,18 +472,22 @@
         <div class="desktop-visual">
           <div class="desktop-screenshots">
             <div class="screenshot-container">
-              <img src="/UploadTab_2025-12-15.png" alt="Desktop App - Upload Tab" class="screenshot active"
+              <img src="/UploadTab_2025-12-15.png"
+                alt="Upload tab showing folder selection and document indexing options" class="screenshot active"
                 id="screenshot-1" loading="lazy">
-              <img src="/SearchTab_2025-12-15.png" alt="Desktop App - Search Tab" class="screenshot" id="screenshot-2"
-                loading="lazy">
-              <img src="/DocumentsTab_2025-12-15.png" alt="Desktop App - Documents Tab" class="screenshot"
+              <img src="/SearchTab_2025-12-15.png"
+                alt="Search tab with semantic query input and ranked document results" class="screenshot"
+                id="screenshot-2" loading="lazy">
+              <img src="/DocumentsTab_2025-12-15.png"
+                alt="Documents tab displaying indexed files with metadata and source locations" class="screenshot"
                 id="screenshot-3" loading="lazy">
-              <img src="/RecentTag_2025-12-15.png" alt="Desktop App - Recent Tab" class="screenshot" id="screenshot-4"
-                loading="lazy">
-              <img src="/ManageTab_2025-12-15.png" alt="Desktop App - Manage Tab" class="screenshot" id="screenshot-5"
-                loading="lazy">
-              <img src="/SettingsTab_2025-12-15.png" alt="Desktop App - Settings Tab" class="screenshot"
-                id="screenshot-6" loading="lazy">
+              <img src="/RecentTag_2025-12-15.png"
+                alt="Recent tab showing recently accessed documents and search history" class="screenshot"
+                id="screenshot-4" loading="lazy">
+              <img src="/ManageTab_2025-12-15.png" alt="Manage tab with database management and export backup options"
+                class="screenshot" id="screenshot-5" loading="lazy">
+              <img src="/SettingsTab_2025-12-15.png" alt="Settings tab for configuring embedding models and preferences"
+                class="screenshot" id="screenshot-6" loading="lazy">
             </div>
             <div class="screenshot-dots">
               <button class="dot active" data-screenshot="1" aria-label="View Upload tab"></button>
@@ -499,25 +503,26 @@
     </div>
   </section>
 
-  <!-- For Teams Section (Moved) -->
-  <section id="teams"
-    style="background: var(--color-bg-secondary); border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
+  <!-- For Teams Section -->
+  <section id="teams" class="teams-section">
     <div class="container">
       <div class="section-header">
         <h2 class="section-title">For Teams & Organizations</h2>
         <p class="section-description">Deploy privately on an internal machine or server</p>
       </div>
-      <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-        <ul
-          style="list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; margin-bottom: 2.5rem; color: var(--color-text-secondary); font-size: 1.1rem;">
-          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
-              style="color: var(--color-accent-green);">✓</span> Keep sensitive documents off the cloud</li>
-          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
-              style="color: var(--color-accent-green);">✓</span> Optional API for integration</li>
-          <li style="display: flex; align-items: center; gap: 0.5rem;"><span
-              style="color: var(--color-accent-green);">✓</span> Commercial licensing available</li>
+      <div class="teams-content">
+        <ul class="teams-features-list">
+          <li class="teams-feature-item">
+            <span class="teams-feature-check">✓</span> Keep sensitive documents off the cloud
+          </li>
+          <li class="teams-feature-item">
+            <span class="teams-feature-check">✓</span> Optional API for integration
+          </li>
+          <li class="teams-feature-item">
+            <span class="teams-feature-check">✓</span> Commercial licensing available
+          </li>
         </ul>
-        <div class="hero-buttons" style="justify-content: center;">
+        <div class="teams-buttons">
           <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/DEPLOYMENT.md" target="_blank"
             rel="noopener noreferrer" class="btn btn-secondary">
             <span>Team Deployment</span>
@@ -547,7 +552,8 @@
             prefer browser-based access.
           </p>
           <p style="margin-bottom: 2rem; font-size: 0.9rem; opacity: 0.8;">
-            By default it binds to localhost (your machine only).
+            By default it binds to localhost (your machine only). You can optionally bind to your LAN for home server or
+            team deployments.
           </p>
           <div class="hero-buttons" style="justify-content: center; gap: 1rem; flex-wrap: wrap;">
             <div style="text-align: center;">
@@ -557,7 +563,7 @@
               </a>
               <p style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.7; max-width: 200px;">Works only
                 after you
-                install and run PGVectorRAGIndexer locally.</p>
+                install and run PGVectorRAG locally.</p>
             </div>
             <div style="text-align: center;">
               <a href="http://localhost:8000/docs" target="_blank" class="btn btn-secondary"
@@ -756,7 +762,7 @@
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; 2024-2025 PGVectorRAGIndexer. All rights reserved.</p>
+        <p>&copy; 2024-2025 PGVectorRAG. All rights reserved.</p>
         <p>Version 2.2 - Production Ready ✅</p>
       </div>
     </div>

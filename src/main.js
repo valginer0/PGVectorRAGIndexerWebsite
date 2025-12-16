@@ -22,11 +22,27 @@ const navToggle = document.getElementById('nav-toggle');
 const navLinks = document.getElementById('nav-links');
 
 // Helper to close mobile menu
+let scrollPosition = 0;
+
+function openMobileMenu() {
+  // Store current scroll position and lock body (iOS Safari fix)
+  scrollPosition = window.pageYOffset;
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollPosition}px`;
+  document.body.style.width = '100%';
+}
+
 function closeMobileMenu() {
   navLinks.classList.remove('open');
   navToggle.classList.remove('active');
   navToggle.setAttribute('aria-expanded', 'false');
-  document.body.style.overflow = ''; // Restore scroll
+  // Restore scroll (iOS Safari fix)
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  window.scrollTo(0, scrollPosition);
 }
 
 if (navToggle && navLinks) {
@@ -35,7 +51,11 @@ if (navToggle && navLinks) {
     navToggle.classList.toggle('active');
     navToggle.setAttribute('aria-expanded', isOpen);
     // Lock/unlock body scroll
-    document.body.style.overflow = isOpen ? 'hidden' : '';
+    if (isOpen) {
+      openMobileMenu();
+    } else {
+      closeMobileMenu();
+    }
   });
 
   // Close menu when clicking a nav link
@@ -312,6 +332,6 @@ async function fetchGitHubStars() {
 fetchGitHubStars();
 
 // ===== Console Welcome Message =====
-console.log('%c🔍 PGVectorRAGIndexer', 'font-size: 20px; font-weight: bold; color: #667eea;');
+console.log('%c🔍 PGVectorRAG', 'font-size: 20px; font-weight: bold; color: #667eea;');
 console.log('%cProduction-ready semantic document search for RAG applications', 'font-size: 12px; color: #a0a0b8;');
 console.log('%cGitHub: https://github.com/valginer0/PGVectorRAGIndexer', 'font-size: 12px; color: #667eea;');
