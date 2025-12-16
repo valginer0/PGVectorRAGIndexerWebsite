@@ -935,7 +935,7 @@ code {
 }
 
 .dot.active {
-  background: var(--gradient-primary);
+  background: var(--color-accent-purple);
   width: 32px;
   border-radius: 6px;
 }
