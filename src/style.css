@@ -33,6 +33,7 @@
   --primary: var(--color-accent-purple);
   --primary-rgb: 102, 126, 234;
   --text-primary: var(--color-text-primary);
+  --color-star-gold: #f1c40f;
 
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.05);
@@ -184,7 +185,7 @@ body {
 /* ===== Hero Section ===== */
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   display: flex;
   align-items: center;
   padding: var(--spacing-3xl) 0;
@@ -260,7 +261,7 @@ body {
 }
 
 .github-stars-badge svg {
-  color: #f1c40f;
+  color: var(--color-star-gold);
 }
 
 .badge-dot {
