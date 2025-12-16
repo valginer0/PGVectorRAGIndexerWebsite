@@ -21,37 +21,39 @@ window.addEventListener('scroll', () => {
 const navToggle = document.getElementById('nav-toggle');
 const navLinks = document.getElementById('nav-links');
 
+// Helper to close mobile menu
+function closeMobileMenu() {
+  navLinks.classList.remove('open');
+  navToggle.classList.remove('active');
+  navToggle.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = ''; // Restore scroll
+}
+
 if (navToggle && navLinks) {
   navToggle.addEventListener('click', () => {
     const isOpen = navLinks.classList.toggle('open');
     navToggle.classList.toggle('active');
     navToggle.setAttribute('aria-expanded', isOpen);
+    // Lock/unlock body scroll
+    document.body.style.overflow = isOpen ? 'hidden' : '';
   });
 
   // Close menu when clicking a nav link
   navLinks.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-      navLinks.classList.remove('open');
-      navToggle.classList.remove('active');
-      navToggle.setAttribute('aria-expanded', 'false');
-    });
+    link.addEventListener('click', closeMobileMenu);
   });
 
   // Close menu when clicking outside
   document.addEventListener('click', (e) => {
     if (!navLinks.contains(e.target) && !navToggle.contains(e.target) && navLinks.classList.contains('open')) {
-      navLinks.classList.remove('open');
-      navToggle.classList.remove('active');
-      navToggle.setAttribute('aria-expanded', 'false');
+      closeMobileMenu();
     }
   });
 
   // Close menu on ESC key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && navLinks.classList.contains('open')) {
-      navLinks.classList.remove('open');
-      navToggle.classList.remove('active');
-      navToggle.setAttribute('aria-expanded', 'false');
+      closeMobileMenu();
     }
   });
 }
@@ -167,13 +169,11 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, observerOptions);
 
-// Observe all elements that should fade in
-document.addEventListener('DOMContentLoaded', () => {
-  const fadeElements = document.querySelectorAll('.section-header, .feature-card, .use-case-card, .desktop-feature, .api-example, .quickstart-info');
-  fadeElements.forEach(el => {
-    el.classList.add('fade-in');
-    observer.observe(el);
-  });
+// Observe all elements that should fade in (script is at end of body, DOM ready)
+const fadeElements = document.querySelectorAll('.section-header, .feature-card, .use-case-card, .desktop-feature, .api-example, .quickstart-info');
+fadeElements.forEach(el => {
+  el.classList.add('fade-in');
+  observer.observe(el);
 });
 
 // ===== Screenshot Carousel Navigation =====
