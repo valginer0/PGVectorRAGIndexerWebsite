@@ -1,3 +1,6 @@
+// ===== Import CSS for Vite bundling =====
+import './style.css';
+
 // ===== Navbar Scroll Effect =====
 const navbar = document.getElementById('navbar');
 let lastScroll = 0;
@@ -37,6 +40,15 @@ if (navToggle && navLinks) {
   // Close menu when clicking outside
   document.addEventListener('click', (e) => {
     if (!navLinks.contains(e.target) && !navToggle.contains(e.target) && navLinks.classList.contains('open')) {
+      navLinks.classList.remove('open');
+      navToggle.classList.remove('active');
+      navToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Close menu on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navLinks.classList.contains('open')) {
       navLinks.classList.remove('open');
       navToggle.classList.remove('active');
       navToggle.setAttribute('aria-expanded', 'false');
@@ -157,7 +169,7 @@ const observer = new IntersectionObserver((entries) => {
 
 // Observe all elements that should fade in
 document.addEventListener('DOMContentLoaded', () => {
-  const fadeElements = document.querySelectorAll('.feature-card, .use-case-card, .desktop-feature, .api-example');
+  const fadeElements = document.querySelectorAll('.section-header, .feature-card, .use-case-card, .desktop-feature, .api-example, .quickstart-info');
   fadeElements.forEach(el => {
     el.classList.add('fade-in');
     observer.observe(el);
@@ -274,7 +286,15 @@ async function fetchGitHubStars() {
   if (!starsElement) return;
 
   try {
-    const response = await fetch('https://api.github.com/repos/valginer0/PGVectorRAGIndexer');
+    // Add timeout to prevent hanging on slow networks
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+    const response = await fetch('https://api.github.com/repos/valginer0/PGVectorRAGIndexer', {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
     if (response.ok) {
       const data = await response.json();
       const stars = data.stargazers_count;
@@ -282,7 +302,10 @@ async function fetchGitHubStars() {
       starsElement.parentElement.style.display = 'inline-flex';
     }
   } catch (err) {
-    console.log('Could not fetch GitHub stars:', err);
+    // Silently fail - badge just stays hidden
+    if (err.name !== 'AbortError') {
+      console.log('Could not fetch GitHub stars:', err);
+    }
   }
 }
 
