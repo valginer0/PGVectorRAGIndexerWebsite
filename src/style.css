@@ -574,6 +574,13 @@ section {
   margin-top: var(--spacing-sm);
 }
 
+.quickstart-reassurance {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  opacity: 0.85;
+  font-style: italic;
+}
+
 /* ===== Features Section ===== */
 .features {
   background: var(--color-bg-secondary);
