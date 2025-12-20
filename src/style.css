@@ -304,6 +304,13 @@ body {
   white-space: nowrap;
 }
 
+@media (max-width: 480px) {
+  .hero-title .gradient-text {
+    white-space: normal;
+    /* allow wrap on tiny screens */
+  }
+}
+
 .hero-description {
   font-size: var(--font-size-xl);
   color: var(--color-text-secondary);
