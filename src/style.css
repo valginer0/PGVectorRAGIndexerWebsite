@@ -300,6 +300,10 @@ body {
   display: inline-block;
 }
 
+.hero-title .gradient-text {
+  white-space: nowrap;
+}
+
 .hero-description {
   font-size: var(--font-size-xl);
   color: var(--color-text-secondary);
