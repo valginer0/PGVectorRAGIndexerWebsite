@@ -1183,6 +1183,7 @@ code {
   border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
   margin-bottom: var(--spacing-2xl);
+  opacity: 0.95;
 }
 
 .email-signup-content {
