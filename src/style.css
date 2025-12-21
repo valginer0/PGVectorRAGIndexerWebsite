@@ -1161,6 +1161,14 @@ code {
   border-top: 1px solid var(--glass-border);
 }
 
+.exit-reassurance {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  opacity: 0.85;
+  margin-bottom: var(--spacing-xl);
+}
+
 .footer-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
