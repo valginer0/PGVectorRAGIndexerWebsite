@@ -1154,6 +1154,38 @@ code {
   line-height: 1.7;
 }
 
+/* ===== FAQ Section ===== */
+.faq-section {
+  background: var(--color-bg-secondary);
+  padding: var(--spacing-3xl) 0;
+}
+
+.faq-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.faq-item {
+  background: var(--color-bg-tertiary);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.faq-question {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-primary);
+}
+
+.faq-answer {
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
 /* ===== Footer ===== */
 .footer {
   background: var(--color-bg-tertiary);
