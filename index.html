@@ -208,8 +208,8 @@
         <div class="feature-card">
           <div class="feature-icon">🖥️</div>
           <h3 class="feature-title">Desktop & CLI Tools</h3>
-          <p class="feature-description">Windows GUI app + cross-platform Docker CLI tools. Full control over your local
-            data.</p>
+          <p class="feature-description">Desktop app for Windows, macOS, and Linux. Plus Docker CLI tools for servers
+            and automation.</p>
         </div>
 
         <div class="feature-card">
@@ -343,15 +343,48 @@
 
       <div class="quickstart-content">
         <div class="platform-tabs" role="tablist">
-          <button class="platform-tab active" data-platform="linux" role="tab" aria-controls="platform-linux"
-            aria-selected="true" id="tab-linux">Linux / macOS (Docker CLI)</button>
+          <button class="platform-tab active" data-platform="macos-linux" role="tab"
+            aria-controls="platform-macos-linux" aria-selected="true" id="tab-macos-linux">macOS / Linux (Desktop
+            App)</button>
           <button class="platform-tab" data-platform="windows" role="tab" aria-controls="platform-windows"
             aria-selected="false" id="tab-windows">Windows (Desktop App)</button>
+          <button class="platform-tab" data-platform="linux" role="tab" aria-controls="platform-linux"
+            aria-selected="false" id="tab-linux">Docker CLI (Advanced)</button>
           <button class="platform-tab" data-platform="manual" role="tab" aria-controls="platform-manual"
             aria-selected="false" id="tab-manual">Manual / Full Guide</button>
         </div>
 
-        <div class="platform-content active" data-platform="linux" id="platform-linux" role="tabpanel"
+        <div class="platform-content active" data-platform="macos-linux" id="platform-macos-linux" role="tabpanel"
+          aria-labelledby="tab-macos-linux">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-language">bash</span>
+              <button class="copy-btn"
+                data-copy="curl -fsSL https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/bootstrap_desktop_app.sh | bash">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="5" width="9" height="9" rx="1" />
+                  <path d="M3 11V3a1 1 0 0 1 1-1h8" />
+                </svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/bootstrap_desktop_app.sh | bash</code></pre>
+          </div>
+          <div class="quickstart-info">
+            <p><strong>Desktop App (Recommended):</strong></p>
+            <ul>
+              <li>Works on macOS (including Catalina) and Linux</li>
+              <li>Installs Python dependencies and the desktop GUI automatically</li>
+              <li>Full document management with drag-and-drop</li>
+              <li>Includes backup/restore and search interface</li>
+            </ul>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+              <em>Requires Docker for the database backend.</em>
+            </p>
+          </div>
+        </div>
+
+        <div class="platform-content" data-platform="linux" id="platform-linux" role="tabpanel"
           aria-labelledby="tab-linux">
           <div class="code-block">
             <div class="code-header">
@@ -368,18 +401,15 @@
             <pre><code>curl -fsSL https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/docker-run.sh | bash</code></pre>
           </div>
           <div class="quickstart-info">
-            <p><strong>What this does:</strong></p>
+            <p><strong>Headless Docker (API-only):</strong></p>
             <ul>
               <li>Downloads and orchestrates the pre-configured Docker containers</li>
               <li>Includes PostgreSQL (pgvector) and the API server ready-to-run</li>
               <li>Automatically initializes the database schema for you</li>
-              <li>No repository clone or Python installation needed</li>
+              <li>No GUI — use via REST API or CLI</li>
             </ul>
             <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
-              <em>Looking for the GUI? See the <a
-                  href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/INSTALL_DESKTOP_APP.md#linux--macos-installation"
-                  target="_blank" rel="noopener noreferrer" style="color: var(--color-accent-cyan);">Linux/Mac
-                  Installation Guide</a>.</em>
+              <em>For server deployments or power users who prefer the command line.</em>
             </p>
           </div>
         </div>
