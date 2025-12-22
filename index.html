@@ -372,13 +372,24 @@
             <pre><code>curl -fsSL https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/bootstrap_desktop_app.sh | bash</code></pre>
           </div>
           <div class="quickstart-info">
-            <p><strong>Desktop App (Recommended):</strong></p>
+            <p><strong>Desktop App (Recommended)</strong></p>
+            <p style="opacity: 0.8; margin-bottom: 1rem;">Works on macOS (including Catalina) and Linux.</p>
+
+            <p><strong>What this command does:</strong></p>
             <ul>
-              <li>Works on macOS (including Catalina) and Linux</li>
-              <li>Installs Python dependencies and the desktop GUI automatically</li>
-              <li>Full document management with drag-and-drop</li>
-              <li>Includes backup/restore and search interface</li>
+              <li>Installs required Python dependencies</li>
+              <li>Sets up the local PostgreSQL + pgvector database (via Docker)</li>
+              <li>Installs the desktop GUI</li>
+              <li>Launches the desktop app automatically</li>
             </ul>
+
+            <p style="margin-top: 1rem;"><strong>Features:</strong></p>
+            <ul>
+              <li>Full document management with drag-and-drop</li>
+              <li>Built-in backup/restore</li>
+              <li>Local semantic search interface</li>
+            </ul>
+
             <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
               <em>Requires Docker for the database backend.</em>
             </p>
@@ -432,14 +443,27 @@
             <pre><code>irm https://raw.githubusercontent.com/valginer0/PGVectorRAGIndexer/main/bootstrap_desktop_app.ps1 | iex</code></pre>
           </div>
           <div class="quickstart-info">
-            <p><strong>Desktop App (Recommended):</strong></p>
+            <p><strong>Desktop App (Recommended)</strong></p>
+            <p style="opacity: 0.8; margin-bottom: 1rem;">Native Windows application with one-click launch.</p>
+
+            <p><strong>What this command does:</strong></p>
             <ul>
-              <li>Installs Python, PySide6, and Docker dependencies automatically</li>
-              <li>Native Windows interface with One-Click Launch icon</li>
-              <li>Includes full backup/restore and document management</li>
+              <li>Installs required Python dependencies</li>
+              <li>Sets up the local PostgreSQL + pgvector database (via Docker)</li>
+              <li>Installs the desktop GUI</li>
+              <li>Creates a desktop shortcut for easy launch</li>
+              <li>Launches the desktop app automatically</li>
             </ul>
+
+            <p style="margin-top: 1rem;"><strong>Features:</strong></p>
+            <ul>
+              <li>Full document management with drag-and-drop</li>
+              <li>Built-in backup/restore</li>
+              <li>Local semantic search interface</li>
+            </ul>
+
             <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
-              <em>Prefer headless Docker? Use <code>docker-run.ps1</code> instead.</em>
+              <em>Requires Docker for the database backend.</em>
             </p>
           </div>
         </div>
