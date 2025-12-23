@@ -1266,14 +1266,23 @@ code {
   color: var(--color-accent-green);
 }
 
-.support-buttons {
+.support-links {
   margin-bottom: var(--spacing-md);
 }
 
-.support-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
+.support-links a {
+  color: var(--color-accent-purple);
+  text-decoration: underline;
+}
+
+.support-links a:hover {
+  color: var(--color-accent-blue);
+}
+
+.support-legal {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--spacing-sm);
 }
 
 .support-note {
