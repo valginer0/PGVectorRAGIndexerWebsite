@@ -1354,6 +1354,21 @@ code {
   max-width: 450px;
 }
 
+/* Helper text under the signup form */
+.signup-helper {
+  font-size: 0.85rem;
+  color: var(--color-text-tertiary);
+  opacity: 0.85;
+  margin-top: 0.75rem;
+  line-height: 1.6;
+}
+
+/* Visual polish for Kit form elements */
+.kit-signup input,
+.kit-signup button {
+  font: inherit;
+}
+
 .signup-form-placeholder {
   display: flex;
   gap: var(--spacing-sm);
