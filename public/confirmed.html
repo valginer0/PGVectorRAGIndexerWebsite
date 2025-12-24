@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Email Confirmed – RagVault</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Your email has been confirmed. Welcome to RagVault updates." />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <style>
+        :root {
+            --color-bg-primary: #0a0a0f;
+            --color-bg-secondary: #12121a;
+            --color-text-primary: #f0f0f5;
+            --color-text-secondary: #a0a0b8;
+            --color-accent-purple: #667eea;
+            --color-accent-green: #00d4aa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        main {
+            max-width: 600px;
+            text-align: center;
+            background: var(--color-bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 3rem 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        p {
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 1.5rem;
+        }
+
+        a {
+            color: var(--color-accent-purple);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--color-accent-green);
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--color-accent-purple), #764ba2);
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="icon">✅</div>
+        <h1>You're confirmed!</h1>
+        <p>
+            Thanks for confirming your email.<br />
+            You're now on the list to receive important RagVault updates.
+        </p>
+        <p class="note">
+            No spam, ever. Just occasional updates about new features and releases.
+        </p>
+        <a href="/" class="back-link">← Back to RagVault</a>
+    </main>
+</body>
+
+</html>
