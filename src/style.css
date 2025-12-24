@@ -1347,7 +1347,8 @@ code {
   max-width: 400px;
 }
 
-.email-signup-form {
+.email-signup-form,
+.kit-signup {
   flex: 1;
   min-width: 300px;
   max-width: 450px;
