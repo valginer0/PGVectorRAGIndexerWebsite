@@ -1345,6 +1345,8 @@ code {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   max-width: 400px;
+  margin-bottom: 0.5rem;
+  /* Tighten gap before Kit form */
 }
 
 .email-signup-form,
@@ -1352,6 +1354,8 @@ code {
   flex: 1;
   min-width: 300px;
   max-width: 450px;
+  margin-top: 0.5rem;
+  /* Tighten gap after text */
 }
 
 /* Helper text under the signup form */
@@ -1363,15 +1367,10 @@ code {
   line-height: 1.6;
 }
 
-/* Reduce Kit form's internal spacing */
-.kit-signup form {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-}
-
-.kit-signup [data-element="fields"] {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+/* Visual polish for Kit form elements */
+.kit-signup input,
+.kit-signup button {
+  font: inherit;
 }
 
 /* Visual polish for Kit form elements */
