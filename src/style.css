@@ -1352,7 +1352,6 @@ code {
   flex: 1;
   min-width: 300px;
   max-width: 450px;
-  margin-top: -0.5rem; /* Tighten gap between text and Kit form */
 }
 
 /* Helper text under the signup form */
@@ -1362,6 +1361,17 @@ code {
   opacity: 0.85;
   margin-top: 0.75rem;
   line-height: 1.6;
+}
+
+/* Reduce Kit form's internal spacing */
+.kit-signup form {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.kit-signup [data-element="fields"] {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* Visual polish for Kit form elements */
