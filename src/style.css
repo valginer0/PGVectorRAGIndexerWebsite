@@ -1352,6 +1352,7 @@ code {
   flex: 1;
   min-width: 300px;
   max-width: 450px;
+  margin-top: -0.5rem; /* Tighten gap between text and Kit form */
 }
 
 /* Helper text under the signup form */
