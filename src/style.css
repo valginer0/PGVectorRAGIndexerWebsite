@@ -795,6 +795,32 @@ code {
   font-weight: bold;
 }
 
+/* ===== Security Note (Calm, Non-Alarming) ===== */
+.security-note {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  opacity: 0.85;
+}
+
+.security-note-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.security-note-text a {
+  color: var(--color-accent-purple);
+  text-decoration: underline;
+}
+
+.security-note-text a:hover {
+  opacity: 0.9;
+}
+
 .services-info {
   margin-top: var(--spacing-2xl);
   padding: var(--spacing-xl);
