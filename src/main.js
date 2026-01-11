@@ -335,3 +335,68 @@ fetchGitHubStars();
 console.log('%c🔍 PGVectorRAG', 'font-size: 20px; font-weight: bold; color: #667eea;');
 console.log('%cProduction-ready semantic document search for RAG applications', 'font-size: 12px; color: #a0a0b8;');
 console.log('%cGitHub: https://github.com/valginer0/PGVectorRAGIndexer', 'font-size: 12px; color: #667eea;');
+
+// ===== OS Detection for Download Buttons =====
+function detectOS() {
+  const userAgent = navigator.userAgent.toLowerCase();
+  const platform = navigator.platform.toLowerCase();
+
+  if (platform.includes('win') || userAgent.includes('windows')) {
+    return 'windows';
+  } else if (platform.includes('mac') || userAgent.includes('mac')) {
+    return 'macos';
+  } else if (platform.includes('linux') || userAgent.includes('linux')) {
+    return 'linux';
+  }
+  return null;
+}
+
+function highlightOSDownload() {
+  const os = detectOS();
+  const osLabels = {
+    'windows': 'Windows detected',
+    'macos': 'macOS detected',
+    'linux': 'Linux detected'
+  };
+
+  if (os) {
+    const downloadOption = document.getElementById(`download-${os}`);
+    const detectedText = document.getElementById('detected-os-text');
+
+    if (downloadOption) {
+      downloadOption.classList.add('detected');
+    }
+
+    if (detectedText && osLabels[os]) {
+      detectedText.textContent = osLabels[os];
+    }
+  }
+}
+
+// Run OS detection
+highlightOSDownload();
+
+// ===== Linux Copy Button Handler =====
+const linuxCopyBtn = document.querySelector('.copy-linux-cmd');
+if (linuxCopyBtn) {
+  linuxCopyBtn.addEventListener('click', async () => {
+    const textToCopy = linuxCopyBtn.getAttribute('data-copy');
+    const originalHTML = linuxCopyBtn.innerHTML;
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      linuxCopyBtn.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 8l3 3 7-7"/>
+        </svg>
+        <span>Copied! Now paste in terminal</span>
+      `;
+
+      setTimeout(() => {
+        linuxCopyBtn.innerHTML = originalHTML;
+      }, 3000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  });
+}
