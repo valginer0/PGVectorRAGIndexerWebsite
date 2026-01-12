@@ -1802,6 +1802,40 @@ code {
   opacity: 0.8;
 }
 
+/* Windows Help Box */
+.windows-help-box {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  text-align: left;
+  max-width: 220px;
+}
+
+.windows-help-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffc107;
+  margin-bottom: 0.5rem;
+}
+
+.windows-help-steps {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.6;
+}
+
+.windows-help-steps li {
+  margin-bottom: 0.25rem;
+}
+
+.windows-help-steps strong {
+  color: var(--color-text-primary);
+}
+
 .download-footer {
   color: var(--color-text-tertiary);
   font-size: var(--font-size-sm);
