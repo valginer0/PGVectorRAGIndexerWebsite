@@ -1795,6 +1795,13 @@ code {
   margin-top: var(--spacing-xs);
 }
 
+.download-hint {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  opacity: 0.8;
+}
+
 .download-footer {
   color: var(--color-text-tertiary);
   font-size: var(--font-size-sm);
@@ -1832,15 +1839,15 @@ code {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .download-option.detected {
     order: 0;
   }
-  
+
   .download-option:not(.detected) {
     opacity: 1;
   }
-  
+
   .btn-download {
     width: 100%;
     max-width: 280px;
