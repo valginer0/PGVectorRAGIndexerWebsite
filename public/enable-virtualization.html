@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Enable Virtualization – RagVault</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Step-by-step guide to enable hardware virtualization in BIOS for Docker and RagVault. Covers Dell, HP, Lenovo, ASUS, Acer, Surface, and more." />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <style>
+        :root {
+            --color-bg-primary: #0a0a0f;
+            --color-bg-secondary: #12121a;
+            --color-bg-card: #1a1a2e;
+            --color-text-primary: #f0f0f5;
+            --color-text-secondary: #a0a0b8;
+            --color-accent-purple: #667eea;
+            --color-accent-green: #00d4aa;
+            --color-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: var(--color-text-secondary);
+            font-size: 1.05rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.5rem;
+            background: var(--color-bg-secondary);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--color-accent-purple);
+            color: var(--color-text-primary);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--color-accent-purple), #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Guide cards */
+        .guide {
+            display: none;
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        .guide.active {
+            display: block;
+        }
+
+        .guide h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .guide .bios-key {
+            display: inline-block;
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: 0.4rem;
+            padding: 0.25rem 0.75rem;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            font-size: 0.95rem;
+            color: var(--color-accent-green);
+            margin-bottom: 1.25rem;
+        }
+
+        .guide ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .guide ol li {
+            margin-bottom: 0.6rem;
+            color: var(--color-text-secondary);
+        }
+
+        .guide ol li strong {
+            color: var(--color-text-primary);
+        }
+
+        .guide .tip {
+            background: var(--color-bg-card);
+            border-left: 3px solid var(--color-accent-purple);
+            border-radius: 0 0.5rem 0.5rem 0;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            margin-top: 1rem;
+        }
+
+        /* Generic guide */
+        .generic-guide {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .generic-guide h3 {
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .generic-guide p {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Back link */
+        .back-link {
+            display: inline-block;
+            margin-top: 2.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--color-accent-purple), #764ba2);
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        a {
+            color: var(--color-accent-purple);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--color-accent-green);
+            text-decoration: underline;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .guide {
+                padding: 1.25rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="icon">&#9881;&#65039;</div>
+            <h1>Enable Hardware Virtualization</h1>
+            <p>A one-time BIOS change required for Docker. Select your computer brand below.</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-brand="dell">Dell</button>
+            <button class="tab-btn" data-brand="hp">HP</button>
+            <button class="tab-btn" data-brand="lenovo">Lenovo</button>
+            <button class="tab-btn" data-brand="asus">ASUS</button>
+            <button class="tab-btn" data-brand="acer">Acer</button>
+            <button class="tab-btn" data-brand="microsoft">Surface</button>
+            <button class="tab-btn" data-brand="samsung">Samsung</button>
+            <button class="tab-btn" data-brand="lg">LG</button>
+            <button class="tab-btn" data-brand="huawei">Huawei</button>
+            <button class="tab-btn" data-brand="msi">MSI</button>
+        </div>
+
+        <!-- Dell -->
+        <div class="guide active" id="guide-dell">
+            <h2>Dell Computers</h2>
+            <span class="bios-key">BIOS Key: F2</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>F2</strong> repeatedly as soon as the Dell logo appears.</li>
+                <li>Navigate to <strong>Virtualization Support</strong> (or Advanced &gt; Virtualization).</li>
+                <li>Set <strong>Virtualization</strong> to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+            <div class="tip">
+                On newer Dell models, the setting may be under <strong>Advanced &gt; Virtualization Support &gt; Intel Virtualization Technology</strong>.
+            </div>
+        </div>
+
+        <!-- HP -->
+        <div class="guide" id="guide-hp">
+            <h2>HP Computers</h2>
+            <span class="bios-key">BIOS Key: F10</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>F10</strong> repeatedly as soon as the HP logo appears.</li>
+                <li>Navigate to <strong>Configuration</strong> (or Security &gt; System Security).</li>
+                <li>Find <strong>Virtualization Technology (VTx)</strong> and set to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+            <div class="tip">
+                On some HP laptops, try pressing <strong>Esc</strong> first, then <strong>F10</strong> for BIOS Setup.
+            </div>
+        </div>
+
+        <!-- Lenovo -->
+        <div class="guide" id="guide-lenovo">
+            <h2>Lenovo Computers</h2>
+            <span class="bios-key">BIOS Key: F1 (ThinkPad) or F2 (IdeaPad)</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>F1</strong> (ThinkPad/ThinkCentre) or <strong>F2</strong> (IdeaPad/Legion) repeatedly at the Lenovo logo.</li>
+                <li>Navigate to <strong>Security &gt; Virtualization</strong>.</li>
+                <li>Set <strong>Intel (R) Virtualization Technology</strong> to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+            <div class="tip">
+                On Lenovo Yoga/IdeaPad, you may need to press <strong>Fn + F2</strong> if function keys are set to media mode.
+            </div>
+        </div>
+
+        <!-- ASUS -->
+        <div class="guide" id="guide-asus">
+            <h2>ASUS Computers</h2>
+            <span class="bios-key">BIOS Key: DEL or F2</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>DEL</strong> (desktops) or <strong>F2</strong> (laptops) repeatedly at the ASUS logo.</li>
+                <li>Press <strong>F7</strong> for Advanced Mode if needed.</li>
+                <li>Navigate to <strong>Advanced &gt; CPU Configuration</strong>.</li>
+                <li>Set <strong>Intel Virtualization Technology</strong> (or SVM Mode for AMD) to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+        </div>
+
+        <!-- Acer -->
+        <div class="guide" id="guide-acer">
+            <h2>Acer Computers</h2>
+            <span class="bios-key">BIOS Key: F2 or DEL</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>F2</strong> (laptops) or <strong>DEL</strong> (desktops) repeatedly at the Acer logo.</li>
+                <li>Navigate to <strong>Advanced</strong> tab.</li>
+                <li>Find <strong>Intel Virtualization Technology</strong> and set to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+        </div>
+
+        <!-- Microsoft Surface -->
+        <div class="guide" id="guide-microsoft">
+            <h2>Microsoft Surface</h2>
+            <span class="bios-key">Volume Up + Power button</span>
+            <ol>
+                <li><strong>Shut down</strong> your Surface completely.</li>
+                <li>Press and hold the <strong>Volume Up</strong> button.</li>
+                <li>While holding Volume Up, press and release the <strong>Power</strong> button.</li>
+                <li>Release Volume Up when the UEFI screen appears.</li>
+                <li>Navigate to <strong>Devices</strong> or <strong>Advanced</strong>.</li>
+                <li>Enable <strong>Virtualization</strong> and click <strong>Exit &gt; Restart</strong>.</li>
+            </ol>
+            <div class="tip">
+                Surface uses a UEFI interface instead of traditional BIOS. It looks different but works the same way.
+            </div>
+        </div>
+
+        <!-- Samsung -->
+        <div class="guide" id="guide-samsung">
+            <h2>Samsung Computers</h2>
+            <span class="bios-key">BIOS Key: F2</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>F2</strong> repeatedly at the Samsung logo.</li>
+                <li>Navigate to <strong>Advanced</strong> tab.</li>
+                <li>Find <strong>Intel Virtualization Technology</strong> and set to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+        </div>
+
+        <!-- LG -->
+        <div class="guide" id="guide-lg">
+            <h2>LG Computers</h2>
+            <span class="bios-key">BIOS Key: F2</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>F2</strong> repeatedly at the LG logo.</li>
+                <li>Navigate to <strong>Advanced</strong> tab.</li>
+                <li>Find <strong>Intel Virtualization Technology</strong> and set to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+        </div>
+
+        <!-- Huawei -->
+        <div class="guide" id="guide-huawei">
+            <h2>Huawei MateBook</h2>
+            <span class="bios-key">BIOS Key: F2</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>F2</strong> repeatedly at the Huawei logo.</li>
+                <li>Navigate to <strong>Advanced</strong> tab.</li>
+                <li>Find <strong>Intel Virtualization Technology</strong> and set to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+        </div>
+
+        <!-- MSI -->
+        <div class="guide" id="guide-msi">
+            <h2>MSI Computers</h2>
+            <span class="bios-key">BIOS Key: DEL</span>
+            <ol>
+                <li><strong>Restart</strong> your computer.</li>
+                <li>Press <strong>DEL</strong> repeatedly at the MSI logo.</li>
+                <li>Navigate to <strong>OC</strong> (or Advanced) &gt; <strong>CPU Features</strong>.</li>
+                <li>Set <strong>SVM Mode</strong> (AMD) or <strong>Intel VT</strong> to <strong>Enabled</strong>.</li>
+                <li>Press <strong>F10</strong> to Save and Exit.</li>
+            </ol>
+        </div>
+
+        <div class="generic-guide">
+            <h3>Not sure which key to press?</h3>
+            <p>Most computers briefly show "Press [key] for Setup" during boot. Common keys are <strong>F2</strong>, <strong>DEL</strong>, <strong>F10</strong>, or <strong>Esc</strong>.</p>
+            <p>The setting is usually called <strong>Intel Virtualization Technology</strong> (Intel CPUs) or <strong>SVM Mode</strong> (AMD CPUs), found under Advanced, Security, or CPU Configuration menus.</p>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/" class="back-link">&larr; Back to RagVault</a>
+        </div>
+
+        <p class="footer-text">After enabling virtualization, restart your computer and re-run the RagVault installer.</p>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.guide').forEach(g => g.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('guide-' + btn.dataset.brand).classList.add('active');
+            });
+        });
+
+        // Auto-select from URL hash (e.g., #dell, #hp)
+        const hash = window.location.hash.replace('#', '').toLowerCase();
+        if (hash) {
+            const btn = document.querySelector(`.tab-btn[data-brand="${hash}"]`);
+            if (btn) btn.click();
+        }
+    </script>
+</body>
+
+</html>
