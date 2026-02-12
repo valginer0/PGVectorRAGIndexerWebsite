@@ -1,13 +1,5 @@
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-// Stripe Price IDs — set these in Vercel env vars after creating products in Stripe
-const PRICE_MAP = {
-  team: process.env.STRIPE_PRICE_TEAM,
-  organization: process.env.STRIPE_PRICE_ORG,
-};
-
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', process.env.SITE_URL || 'https://www.ragvault.net');
@@ -22,8 +14,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('STRIPE_SECRET_KEY is not set');
+    return res.status(500).json({ error: 'Payment system not configured. Email hello@ragvault.net' });
+  }
+
   try {
-    const { tier, seats } = req.body;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+    const PRICE_MAP = {
+      team: process.env.STRIPE_PRICE_TEAM,
+      organization: process.env.STRIPE_PRICE_ORG,
+    };
+
+    const { tier, seats } = req.body || {};
 
     if (!tier || !PRICE_MAP[tier]) {
       return res.status(400).json({
@@ -34,7 +38,7 @@ export default async function handler(req, res) {
     const priceId = PRICE_MAP[tier];
     if (!priceId) {
       return res.status(500).json({
-        error: `Price ID not configured for tier: ${tier}. Contact support.`,
+        error: `Price ID not configured for tier: ${tier}. Contact hello@ragvault.net`,
       });
     }
 
@@ -53,14 +57,12 @@ export default async function handler(req, res) {
       },
       success_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#purchase-success`,
       cancel_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#pricing`,
-      // Collect customer email for license delivery
-      customer_email: undefined, // Let Stripe collect it
       billing_address_collection: 'required',
     });
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error('Checkout error:', err);
-    return res.status(500).json({ error: 'Failed to create checkout session' });
+    console.error('Checkout error:', err.message || err);
+    return res.status(500).json({ error: 'Failed to create checkout session. Email hello@ragvault.net' });
   }
 }

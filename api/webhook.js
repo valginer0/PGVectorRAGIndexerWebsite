@@ -3,8 +3,6 @@ import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 // ---------------------------------------------------------------------------
 // License key generation (mirrors generate_license_key.py)
 // ---------------------------------------------------------------------------
@@ -122,6 +120,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing signature' });
     }
 
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     event = stripe.webhooks.constructEvent(
       rawBody,
       sig,
