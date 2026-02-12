@@ -810,9 +810,9 @@
             <li><span class="pricing-check">&#10003;</span> Activity and audit log</li>
             <li><span class="pricing-check">&#10003;</span> Priority email support</li>
           </ul>
-          <a href="mailto:valginer0@gmail.com?subject=Team%20License%20Inquiry" class="btn btn-primary pricing-btn">
-            <span>Reserve Your License</span>
-          </a>
+          <button onclick="startCheckout('team')" class="btn btn-primary pricing-btn">
+            <span>Buy Team License</span>
+          </button>
         </div>
 
         <!-- Organization -->
@@ -835,10 +835,9 @@
             <li><span class="pricing-check">&#10003;</span> Dedicated onboarding call</li>
             <li><span class="pricing-check">&#10003;</span> 48h support SLA</li>
           </ul>
-          <a href="mailto:valginer0@gmail.com?subject=Organization%20License%20Inquiry"
-            class="btn btn-secondary pricing-btn">
-            <span>Contact Us</span>
-          </a>
+          <button onclick="startCheckout('organization')" class="btn btn-secondary pricing-btn">
+            <span>Buy Organization License</span>
+          </button>
         </div>
 
         <!-- Enterprise -->
@@ -860,7 +859,7 @@
             <li><span class="pricing-check">&#10003;</span> Compliance exports</li>
             <li><span class="pricing-check">&#10003;</span> Dedicated support channel</li>
           </ul>
-          <a href="mailto:valginer0@gmail.com?subject=Enterprise%20License%20Inquiry"
+          <a href="mailto:hello@ragvault.net?subject=Enterprise%20License%20Inquiry"
             class="btn btn-secondary pricing-btn">
             <span>Contact Us</span>
           </a>
@@ -1202,6 +1201,62 @@
       </div>
     </div>
   </footer>
+
+  <!-- Purchase Success Modal -->
+  <div id="purchase-success-modal"
+    style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center">
+    <div
+      style="background:#1e1e2e;border:1px solid rgba(99,102,241,0.3);border-radius:16px;padding:40px;max-width:500px;text-align:center;margin:20px">
+      <div style="font-size:48px;margin-bottom:16px">🎉</div>
+      <h2 style="color:#e2e8f0;margin:0 0 12px">Thank You!</h2>
+      <p style="color:#9ca3af;margin:0 0 20px">Your license key will be delivered to your email within a few minutes.
+        Check your inbox (and spam folder).</p>
+      <p style="color:#6b7280;font-size:0.85em;margin:0 0 20px">Need help? Email <a href="mailto:hello@ragvault.net"
+          style="color:#a5b4fc">hello@ragvault.net</a></p>
+      <button
+        onclick="document.getElementById('purchase-success-modal').style.display='none';history.replaceState(null,'',location.pathname)"
+        class="btn btn-primary" style="padding:10px 24px">Got it</button>
+    </div>
+  </div>
+
+  <!-- Stripe Checkout -->
+  <script>
+    async function startCheckout(tier) {
+      const btn = event.target.closest('button');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span>Processing...</span>';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tier }),
+        });
+
+        const data = await res.json();
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert('Something went wrong. Please try again or email hello@ragvault.net');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert('Connection error. Please try again or email hello@ragvault.net');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // Show success modal if returning from Stripe
+    if (window.location.hash === '#purchase-success') {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('purchase-success-modal').style.display = 'flex';
+      });
+    }
+  </script>
 
   <script type="module" src="/src/main.js"></script>
 </body>
