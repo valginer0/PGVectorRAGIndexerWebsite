@@ -2040,6 +2040,39 @@ code {
   opacity: 1;
 }
 
+/* ===== Live Demo CTA (inline in hero) ===== */
+.demo-cta-inline {
+  text-align: center;
+  margin: 1.5rem 0 2rem;
+}
+
+.btn-demo-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.5rem;
+  background: rgba(102, 126, 234, 0.12);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 2rem;
+  color: var(--color-accent-purple);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background var(--transition-base), border-color var(--transition-base), transform var(--transition-fast);
+}
+
+.btn-demo-inline:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.5);
+  transform: translateY(-1px);
+}
+
+.demo-cta-note {
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
 @media (max-width: 768px) {
   .download-buttons {
     flex-direction: column;
