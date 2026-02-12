@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO -->
+  <title>PGVectorRAG — Live Demo</title>
+  <meta name="description" content="Try PGVectorRAG live — search sample documents by meaning. No install required.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="PGVectorRAG — Live Demo">
+  <meta property="og:description" content="Try semantic document search live. No install, no signup.">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+
+  <!-- Google Fonts (same as main site) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ===== Reset ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --color-bg-primary: #0a0a0f;
+      --color-bg-secondary: #12121a;
+      --color-bg-tertiary: #1a1a28;
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      --color-text-primary: #ffffff;
+      --color-text-secondary: #a0a0b8;
+      --color-text-tertiary: #6b6b85;
+      --color-accent-purple: #667eea;
+      --color-accent-green: #00d4aa;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow-x: hidden;
+    }
+
+    /* ===== Background glow ===== */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 40%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 60%, rgba(118, 75, 162, 0.06) 0%, transparent 50%);
+      z-index: -1;
+    }
+
+    /* ===== Main container ===== */
+    .demo-container {
+      max-width: 720px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* ===== Logo ===== */
+    .demo-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--color-text-primary);
+    }
+
+    .demo-logo:hover { opacity: 0.9; }
+
+    /* ===== Status area ===== */
+    .demo-status {
+      margin-bottom: 2.5rem;
+    }
+
+    .demo-status h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .demo-status p {
+      color: var(--color-text-secondary);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    /* ===== Progress bar ===== */
+    .progress-container {
+      margin: 2rem auto;
+      max-width: 400px;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--color-bg-tertiary);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    /* Indeterminate animation when polling */
+    .progress-bar.polling .progress-fill {
+      width: 100% !important;
+      animation: indeterminate 1.5s ease-in-out infinite;
+    }
+
+    @keyframes indeterminate {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .progress-text {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--color-text-tertiary);
+    }
+
+    .progress-text .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .status-dot.waking { background: #f5a623; animation: pulse-dot 1s ease-in-out infinite; }
+    .status-dot.ready { background: var(--color-accent-green); }
+    .status-dot.failed { background: #f5576c; }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ===== Feature cards (reading content while waiting) ===== */
+    .demo-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 2rem 0;
+      text-align: left;
+    }
+
+    .demo-feature {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      transition: border-color 0.25s ease;
+    }
+
+    .demo-feature:hover {
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .demo-feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .demo-feature h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .demo-feature p {
+      font-size: 0.82rem;
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ===== Try these searches ===== */
+    .demo-queries {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      margin: 2rem 0;
+      text-align: left;
+    }
+
+    .demo-queries h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--color-text-secondary);
+    }
+
+    .query-chip {
+      display: inline-block;
+      background: rgba(102, 126, 234, 0.12);
+      border: 1px solid rgba(102, 126, 234, 0.25);
+      border-radius: 2rem;
+      padding: 0.4rem 1rem;
+      margin: 0.25rem 0.25rem;
+      font-size: 0.85rem;
+      color: var(--color-accent-purple);
+      font-family: var(--font-family-mono);
+      cursor: default;
+    }
+
+    /* ===== CTA button (appears when ready) ===== */
+    .demo-cta {
+      margin-top: 2rem;
+    }
+
+    .btn-demo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: var(--font-family-primary);
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-demo:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+    }
+
+    .btn-demo:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1rem;
+      color: var(--color-text-tertiary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s ease;
+    }
+
+    .btn-back:hover { color: var(--color-text-secondary); }
+
+    /* ===== Hidden until ready ===== */
+    .hidden { display: none !important; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 600px) {
+      .demo-features {
+        grid-template-columns: 1fr;
+      }
+      .demo-status h1 {
+        font-size: 1.5rem;
+      }
+      body {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="demo-container">
+    <!-- Logo link back to main site -->
+    <a href="/" class="demo-logo">
+      <span>🔍</span>
+      <span>PGVectorRAG</span>
+    </a>
+
+    <!-- Status -->
+    <div class="demo-status">
+      <h1 id="demo-title">Preparing Your Demo...</h1>
+      <p id="demo-subtitle">The demo server is waking up. While you wait, here's what you can do with PGVectorRAG:</p>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-container">
+      <div class="progress-bar polling" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <p class="progress-text" id="progress-text">
+        <span class="status-dot waking" id="status-dot"></span>
+        <span id="status-label">Waking up demo server...</span>
+      </p>
+    </div>
+
+    <!-- Feature cards (reading content) -->
+    <div class="demo-features">
+      <div class="demo-feature">
+        <div class="demo-feature-icon">📄</div>
+        <h3>Multi-Format Search</h3>
+        <p>Search across PDF, Word, Excel, PowerPoint, Markdown, HTML, and plain text — all in one place.</p>
+      </div>
+      <div class="demo-feature">
+        <div class="demo-feature-icon">🔍</div>
+        <h3>Smart Search</h3>
+        <p>Finds exact matches first. When there's no precise hit, it understands meaning — so "dog" also finds "puppy".</p>
+      </div>
+      <div class="demo-feature">
+        <div class="demo-feature-icon">🌳</div>
+        <h3>Document Tree</h3>
+        <p>Browse your indexed documents in a familiar folder structure. See what's indexed at a glance.</p>
+      </div>
+      <div class="demo-feature">
+        <div class="demo-feature-icon">🔒</div>
+        <h3>100% Private</h3>
+        <p>Everything runs on your machine. No cloud uploads, no accounts, no tracking. Your data stays yours.</p>
+      </div>
+    </div>
+
+    <!-- Sample queries to try -->
+    <div class="demo-queries">
+      <h3>🔎 Try these searches once the demo loads:</h3>
+      <span class="query-chip">"how to configure indexes"</span>
+      <span class="query-chip">"error handling best practices"</span>
+      <span class="query-chip">"deployment guide"</span>
+      <span class="query-chip">"API authentication"</span>
+      <span class="query-chip">"database migration"</span>
+    </div>
+
+    <!-- CTA -->
+    <div class="demo-cta">
+      <a href="#" class="btn-demo" id="demo-btn" disabled>
+        <span id="demo-btn-text">Waiting for server...</span>
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+      <br>
+      <a href="/" class="btn-back">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 8H3M7 4L3 8l4 4"/>
+        </svg>
+        Back to PGVectorRAG
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // ===== Demo Warm-Up Logic =====
+    // Pings the demo server health endpoint until it responds,
+    // then enables the CTA button and optionally auto-redirects.
+
+    const DEMO_URL = 'https://demo-pgvectorrag.onrender.com';
+    const HEALTH_ENDPOINT = DEMO_URL + '/health';
+    const POLL_INTERVAL_MS = 3000;
+    const MAX_ATTEMPTS = 40; // ~2 minutes max wait
+    const AUTO_REDIRECT_DELAY_MS = 2000; // Wait 2s after ready before redirect
+
+    const titleEl = document.getElementById('demo-title');
+    const subtitleEl = document.getElementById('demo-subtitle');
+    const progressBar = document.getElementById('progress-bar');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const statusDot = document.getElementById('status-dot');
+    const statusLabel = document.getElementById('status-label');
+    const demoBtn = document.getElementById('demo-btn');
+    const demoBtnText = document.getElementById('demo-btn-text');
+
+    let attempts = 0;
+    let isReady = false;
+
+    async function pingDemo() {
+      attempts++;
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(HEALTH_ENDPOINT, {
+          signal: controller.signal,
+          mode: 'cors',
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          onDemoReady();
+          return;
+        }
+      } catch (err) {
+        // Expected during cold start — server not up yet
+      }
+
+      // Update progress
+      const progress = Math.min((attempts / MAX_ATTEMPTS) * 100, 95);
+      statusLabel.textContent = `Waking up demo server... (attempt ${attempts})`;
+
+      if (attempts >= MAX_ATTEMPTS) {
+        onDemoFailed();
+        return;
+      }
+
+      setTimeout(pingDemo, POLL_INTERVAL_MS);
+    }
+
+    function onDemoReady() {
+      isReady = true;
+
+      titleEl.textContent = 'Demo is Ready!';
+      subtitleEl.textContent = 'The demo server is up and running. Redirecting you now...';
+
+      progressBar.classList.remove('polling');
+      progressFill.style.width = '100%';
+
+      statusDot.className = 'status-dot ready';
+      statusLabel.textContent = 'Server is ready';
+
+      demoBtn.removeAttribute('disabled');
+      demoBtn.href = DEMO_URL;
+      demoBtnText.textContent = 'Open Demo';
+
+      // Auto-redirect after a short delay
+      setTimeout(() => {
+        if (isReady) {
+          window.location.href = DEMO_URL;
+        }
+      }, AUTO_REDIRECT_DELAY_MS);
+    }
+
+    function onDemoFailed() {
+      titleEl.textContent = 'Demo Unavailable';
+      subtitleEl.textContent = 'The demo server didn\'t respond in time. You can try again or install locally — it takes under 2 minutes.';
+
+      progressBar.classList.remove('polling');
+      progressFill.style.width = '100%';
+      progressFill.style.background = 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)';
+
+      statusDot.className = 'status-dot failed';
+      statusLabel.textContent = 'Server did not respond';
+
+      demoBtn.removeAttribute('disabled');
+      demoBtn.href = DEMO_URL;
+      demoBtnText.textContent = 'Try Anyway';
+    }
+
+    // Start pinging immediately
+    pingDemo();
+  </script>
+</body>
+
+</html>
