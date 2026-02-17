@@ -7,7 +7,7 @@ import crypto from 'crypto';
 // License key generation (mirrors generate_license_key.py)
 // ---------------------------------------------------------------------------
 
-function generateLicenseKey(edition, orgName, seats, days) {
+function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     edition,
@@ -16,6 +16,7 @@ function generateLicenseKey(edition, orgName, seats, days) {
     iat: now,
     exp: now + days * 86400,
     jti: crypto.randomUUID(),
+    renewal_count: renewalCount,
   };
   return jwt.sign(payload, process.env.LICENSE_SIGNING_SECRET, { algorithm: 'HS256' });
 }
@@ -131,7 +132,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
-  // Handle the checkout.session.completed event
+  // Handle the checkout.session.completed event (initial purchase)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
@@ -141,24 +142,67 @@ export default async function handler(req, res) {
       const customerEmail = session.customer_details?.email || session.customer_email;
       const customerName = session.customer_details?.name || '';
       const orgName = customerName || customerEmail || 'Customer';
-      const expiryDays = 365;
+      const expiryDays = 90;
 
       if (!customerEmail) {
         console.error('No customer email found in session:', session.id);
         return res.status(200).json({ received: true, warning: 'No email — manual follow-up needed' });
       }
 
-      // Generate license key
-      const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays);
+      // Generate license key (initial purchase, renewal_count = 0)
+      const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, 0);
 
       // Send license email
       await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
-      console.log(`License delivered: ${tier} (${seats} seats) → ${customerEmail}`);
+      console.log(`License delivered: ${tier} (${seats} seats, ${expiryDays}d) → ${customerEmail}`);
     } catch (err) {
       console.error('License delivery failed:', err);
       // Still return 200 so Stripe doesn't retry — handle manually
       return res.status(200).json({ received: true, error: 'License delivery failed — manual follow-up needed' });
+    }
+  }
+
+  // Handle subscription renewal (invoice.paid for recurring billing cycles)
+  if (event.type === 'invoice.paid') {
+    const invoice = event.data.object;
+
+    // Only process subscription renewals, not the initial payment
+    if (invoice.billing_reason === 'subscription_cycle') {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+        // Get subscription to read metadata
+        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+        const tier = subscription.metadata?.tier || 'team';
+        const seats = parseInt(subscription.metadata?.seats || (tier === 'team' ? '5' : '25'), 10);
+        const renewalCount = parseInt(subscription.metadata?.renewal_count || '0', 10) + 1;
+        const orgName = subscription.metadata?.org || invoice.customer_name || invoice.customer_email || 'Customer';
+        const customerEmail = invoice.customer_email;
+        const customerName = invoice.customer_name || '';
+        const expiryDays = 90;
+
+        if (!customerEmail) {
+          console.error('No customer email on renewal invoice:', invoice.id);
+          return res.status(200).json({ received: true, warning: 'No email — manual follow-up needed' });
+        }
+
+        // Generate fresh license key with incremented renewal count
+        const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, renewalCount);
+
+        // Send renewal email
+        await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+
+        // Update renewal count in subscription metadata
+        await stripe.subscriptions.update(invoice.subscription, {
+          metadata: { ...subscription.metadata, renewal_count: String(renewalCount) },
+        });
+
+        console.log(`License renewed (#${renewalCount}): ${tier} (${seats} seats, ${expiryDays}d) → ${customerEmail}`);
+      } catch (err) {
+        console.error('License renewal failed:', err);
+        return res.status(200).json({ received: true, error: 'License renewal failed — manual follow-up needed' });
+      }
     }
   }
 
