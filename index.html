@@ -1098,7 +1098,60 @@
     </div>
   </section>
 
-
+  <!-- What We Collect (#14 analytics transparency) -->
+  <section id="privacy" class="privacy-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">What We Collect</h2>
+        <p class="section-subtitle">Full transparency about desktop app analytics</p>
+      </div>
+      <div class="privacy-content">
+        <p class="privacy-intro">
+          The desktop app includes <strong>opt-in</strong> anonymous usage analytics, disabled by default.
+          You are asked once on first launch and can change your choice any time in Settings.
+        </p>
+        <div class="privacy-columns">
+          <div class="privacy-card privacy-yes">
+            <h3>What we collect</h3>
+            <ul>
+              <li>Event types (app started, search completed, upload completed)</li>
+              <li>Result counts and durations (no content)</li>
+              <li>OS version and app version</li>
+              <li>Anonymous install ID (random UUID, not tied to you)</li>
+            </ul>
+          </div>
+          <div class="privacy-card privacy-no">
+            <h3>What we never collect</h3>
+            <ul>
+              <li>Document content or file names</li>
+              <li>Search queries or results text</li>
+              <li>File paths or folder names</li>
+              <li>IP addresses or personal information</li>
+            </ul>
+          </div>
+        </div>
+        <div class="privacy-example">
+          <h3>Example event payload</h3>
+          <pre><code>{
+  "event": "search.completed",
+  "ts": "2026-02-20T10:15:30Z",
+  "session": "a1b2c3d4e5f6",
+  "install_id": "79e0d947...",
+  "app_version": "2.4.7",
+  "os": "Windows 10",
+  "properties": {
+    "result_count": 12,
+    "duration_ms": 250
+  }
+}</code></pre>
+        </div>
+        <p class="privacy-audit">
+          Every event is logged locally. Open <strong>Settings &gt; Usage Analytics &gt; View Event Log</strong>
+          to inspect exactly what has been recorded.
+        </p>
+      </div>
+    </div>
+  </section>
 
   <!-- Footer -->
   <footer class="footer">

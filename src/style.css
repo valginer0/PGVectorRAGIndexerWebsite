@@ -1493,6 +1493,129 @@ code {
   text-decoration: underline;
 }
 
+/* ===== Privacy / What We Collect ===== */
+.privacy-section {
+  background: var(--color-bg-secondary);
+  padding: var(--spacing-2xl) 0;
+}
+
+.privacy-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.privacy-intro {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  line-height: 1.7;
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.privacy-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 600px) {
+  .privacy-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.privacy-card {
+  border-radius: 8px;
+  padding: var(--spacing-md);
+}
+
+.privacy-card h3 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.privacy-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.privacy-card ul li {
+  margin-bottom: var(--spacing-xs);
+  padding-left: 1.4em;
+  position: relative;
+}
+
+.privacy-card ul li::before {
+  position: absolute;
+  left: 0;
+}
+
+.privacy-yes {
+  background: rgba(0, 212, 170, 0.08);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+}
+
+.privacy-yes h3 {
+  color: var(--color-accent-green);
+}
+
+.privacy-yes li::before {
+  content: '✓ ';
+  color: var(--color-accent-green);
+}
+
+.privacy-no {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.privacy-no h3 {
+  color: #ef4444;
+}
+
+.privacy-no li::before {
+  content: '✕ ';
+  color: #ef4444;
+}
+
+.privacy-example {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.privacy-example h3 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.privacy-example pre {
+  margin: 0;
+  overflow-x: auto;
+}
+
+.privacy-example code {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.privacy-audit {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  line-height: 1.6;
+}
+
 /* ===== Footer ===== */
 .footer {
   background: var(--color-bg-tertiary);
