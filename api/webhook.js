@@ -162,17 +162,25 @@ export default async function handler(req, res) {
         subscriptionMetadata = sub.metadata || {};
       }
 
-      // 1. Recovery-Aware Idempotency Check
+      // 1. Recovery-Aware Idempotency Check with Stale Lock
       const fulfilledId = customer?.metadata?.last_fulfilled_session_id;
       const processingId = customer?.metadata?.last_processing_session_id;
+      const processingAt = parseInt(customer?.metadata?.last_processing_session_at || '0', 10);
+      const now = Math.floor(Date.now() / 1000);
+      const diff = now - processingAt;
 
       if (fulfilledId === session.id) {
-        console.log(`[Webhook] SKIPPING session ${session.id}: Already fulfilled.`);
+        console.log(`[Webhook] SKIP (fulfilled): session ${session.id} already delivered.`);
         return res.status(200).json({ received: true, info: 'Duplicate session' });
       }
 
       if (processingId === session.id) {
-        console.warn(`[Webhook] Recovery detected for session ${session.id}: Pre-email process was interrupted. Proceeding.`);
+        if (diff < 300) {
+          console.log(`[Webhook] SKIP (recent processing): session ${session.id} is already in flight (${diff}s ago).`);
+          return res.status(200).json({ received: true, info: 'Concurrent session' });
+        } else {
+          console.warn(`[Webhook] Stale recovery detected for session ${session.id}: Process was interrupted ${diff}s ago. Proceeding.`);
+        }
       }
 
       // Metadata Audit
@@ -195,17 +203,27 @@ export default async function handler(req, res) {
         console.error('[Webhook] Permanent Error: No customer email found in session:', session.id);
         // Clear processing marker if it was set
         if (session.customer) {
+          const freshCustomer = await stripe.customers.retrieve(session.customer);
           await stripe.customers.update(session.customer, {
-            metadata: { ...customer?.metadata, last_processing_session_id: '' }
+            metadata: {
+              ...freshCustomer.metadata,
+              last_processing_session_id: '',
+              last_processing_session_at: ''
+            }
           });
         }
         return res.status(200).json({ received: true, warning: 'No email found' });
       }
 
-      // 2. Mark as Processing
+      // 2. Mark as Processing (Timestamped)
       if (session.customer) {
+        const freshCustomer = await stripe.customers.retrieve(session.customer);
         await stripe.customers.update(session.customer, {
-          metadata: { ...customer?.metadata, last_processing_session_id: session.id }
+          metadata: {
+            ...freshCustomer.metadata,
+            last_processing_session_id: session.id,
+            last_processing_session_at: String(now)
+          }
         });
       }
 
@@ -215,16 +233,18 @@ export default async function handler(req, res) {
         const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
 
-        // Use 500 for transient SMTP errors
+        // Final broad retry detection for SMTP
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
         // 3. Final Fulfillment Mark (Atomic & Data-Safe Merge)
         if (session.customer) {
+          const finalCustomerFetch = await stripe.customers.retrieve(session.customer);
           await stripe.customers.update(session.customer, {
             metadata: {
-              ...customer.metadata,
+              ...finalCustomerFetch.metadata,
               last_fulfilled_session_id: session.id,
-              last_processing_session_id: ''
+              last_processing_session_id: '',
+              last_processing_session_at: ''
             }
           });
         }
@@ -234,8 +254,13 @@ export default async function handler(req, res) {
         console.log(`[Webhook] Session is subscription mode (${session.subscription}). Fulfillment deferred to invoice.paid.`);
         // Clear processing marker since we're deferring
         if (session.customer) {
+          const finalCustomerFetch = await stripe.customers.retrieve(session.customer);
           await stripe.customers.update(session.customer, {
-            metadata: { ...customer?.metadata, last_processing_session_id: '' }
+            metadata: {
+              ...finalCustomerFetch.metadata,
+              last_processing_session_id: '',
+              last_processing_session_at: ''
+            }
           });
         }
       }
@@ -252,13 +277,17 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Transient failure, retrying...' });
       }
 
-      // Permanent failure cleanup
+      // Permanent failure cleanup (Fresh re-fetch for safety)
       try {
         if (session.customer) {
           const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
           const currentCustomer = await stripeClient.customers.retrieve(session.customer);
           await stripeClient.customers.update(session.customer, {
-            metadata: { ...currentCustomer.metadata, last_processing_session_id: '' }
+            metadata: {
+              ...currentCustomer.metadata,
+              last_processing_session_id: '',
+              last_processing_session_at: ''
+            }
           });
         }
       } catch (e) { console.error('Failed to clear processing marker:', e); }
@@ -285,17 +314,25 @@ export default async function handler(req, res) {
         invoice.customer ? stripe.customers.retrieve(invoice.customer) : Promise.resolve(null)
       ]);
 
-      // 1. Recovery-Aware Idempotency Check
+      // 1. Recovery-Aware Idempotency Check with Stale Lock
       const fulfilledId = subscription?.metadata?.last_fulfilled_invoice_id;
       const processingId = subscription?.metadata?.last_processing_invoice_id;
+      const processingAt = parseInt(subscription?.metadata?.last_processing_invoice_at || '0', 10);
+      const now = Math.floor(Date.now() / 1000);
+      const diff = now - processingAt;
 
       if (fulfilledId === invoice.id) {
-        console.log(`[Webhook] SKIPPING invoice ${invoice.id}: Already fulfilled.`);
+        console.log(`[Webhook] SKIP (fulfilled): invoice ${invoice.id} already fulfilled.`);
         return res.status(200).json({ received: true, info: 'Duplicate invoice' });
       }
 
       if (processingId === invoice.id) {
-        console.warn(`[Webhook] Recovery detected for invoice ${invoice.id}: Pre-email process was interrupted. Proceeding.`);
+        if (diff < 300) {
+          console.log(`[Webhook] SKIP (recent processing): invoice ${invoice.id} is already in flight (${diff}s ago).`);
+          return res.status(200).json({ received: true, info: 'Concurrent invoice' });
+        } else {
+          console.warn(`[Webhook] Stale recovery detected for invoice ${invoice.id}: Process was interrupted ${diff}s ago. Proceeding.`);
+        }
       }
 
       // Metadata Audit for Invoices
@@ -321,21 +358,30 @@ export default async function handler(req, res) {
       if (!customerEmail) {
         console.error('[Webhook] Permanent Error: No email for invoice:', invoice.id);
         // Clear processing marker
+        const finalSubFetch = await stripe.subscriptions.retrieve(invoice.subscription);
         await stripe.subscriptions.update(invoice.subscription, {
-          metadata: { ...subscription.metadata, last_processing_invoice_id: '' }
+          metadata: {
+            ...finalSubFetch.metadata,
+            last_processing_invoice_id: '',
+            last_processing_invoice_at: ''
+          }
         });
         return res.status(200).json({ received: true, error: 'No email found' });
       }
 
-      // 2. Mark as Processing (Metadata Merge)
+      // 2. Mark as Processing (Metadata Merge + Timestamp)
+      const freshSubBefore = await stripe.subscriptions.retrieve(invoice.subscription);
       await stripe.subscriptions.update(invoice.subscription, {
-        metadata: { ...subscription.metadata, last_processing_invoice_id: invoice.id }
+        metadata: {
+          ...freshSubBefore.metadata,
+          last_processing_invoice_id: invoice.id,
+          last_processing_invoice_at: String(now)
+        }
       });
 
       // Calculate Expiry
       const expiryTimestamp = subscription.current_period_end;
-      const nowSeconds = Math.floor(Date.now() / 1000);
-      const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - nowSeconds) / 86400));
+      const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now) / 86400));
       const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
 
       // License keys & Email
@@ -343,10 +389,12 @@ export default async function handler(req, res) {
       await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
       // 3. Final atomic update: Marker + Renewal (Metadata Merge)
+      const freshSubAfter = await stripe.subscriptions.retrieve(invoice.subscription);
       const updatedMetadata = {
-        ...subscription.metadata,
+        ...freshSubAfter.metadata,
         last_fulfilled_invoice_id: invoice.id,
-        last_processing_invoice_id: ''
+        last_processing_invoice_id: '',
+        last_processing_invoice_at: ''
       };
       if (invoice.billing_reason === 'subscription_cycle') {
         updatedMetadata.renewal_count = String(renewalCount + 1);
@@ -368,13 +416,17 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Transient failure, retrying...' });
       }
 
-      // Permanent failure cleanup
+      // Permanent failure cleanup (Fresh re-fetch for safety)
       try {
         if (invoice.subscription) {
           const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
-          const currentSub = await stripeClient.subscriptions.retrieve(invoice.subscription);
+          const freshSubCleanup = await stripeClient.subscriptions.retrieve(invoice.subscription);
           await stripeClient.subscriptions.update(invoice.subscription, {
-            metadata: { ...currentSub.metadata, last_processing_invoice_id: '' }
+            metadata: {
+              ...freshSubCleanup.metadata,
+              last_processing_invoice_id: '',
+              last_processing_invoice_at: ''
+            }
           });
         }
       } catch (e) { console.error('Failed to clear processing marker:', e); }
