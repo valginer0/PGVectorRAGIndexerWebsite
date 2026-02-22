@@ -235,8 +235,9 @@ export default async function handler(req, res) {
         const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
 
-        console.log(`[Webhook] Fulfilling Payment Mode: ${edition} edition, ${seats} seats, ${customerEmail}`);
+        console.log(`[Webhook] License generated. Sending email to ${customerEmail}...`);
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+        console.log(`[Webhook] SUCCESS: Email sent to ${customerEmail}.`);
 
         // 3. Final Fulfillment Mark (Atomic & Data-Safe Merge)
         if (session.customer) {
