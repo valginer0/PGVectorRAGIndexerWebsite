@@ -167,8 +167,8 @@ export default async function handler(req, res) {
   if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
 
-    // Only process subscription renewals, not the initial payment
-    if (invoice.billing_reason === 'subscription_cycle') {
+    // Process both initial subscription payment and renewals
+    if (invoice.subscription && (invoice.billing_reason === 'subscription_create' || invoice.billing_reason === 'subscription_cycle')) {
       try {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
