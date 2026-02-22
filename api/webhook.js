@@ -128,7 +128,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing signature' });
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 2 });
     event = stripe.webhooks.constructEvent(
       rawBody,
       sig,
@@ -141,8 +141,6 @@ export default async function handler(req, res) {
     const missing = requiredSecrets.filter(s => !process.env[s]);
     if (missing.length > 0) {
       console.error(`[Webhook] CRITICAL: Missing environment variables: ${missing.join(', ')}`);
-    } else {
-      console.log('[Webhook] All environment variables present.');
     }
   } catch (err) {
     console.error('[Webhook] Signature verification failed:', err.message);
@@ -155,7 +153,7 @@ export default async function handler(req, res) {
     console.log(`[Webhook] Handling checkout.session.completed for ${session.id}`);
 
     try {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 2 });
 
       // Audit metadata from Session + Customer (+ Subscription if exists)
       const customer = session.customer ? await stripe.customers.retrieve(session.customer) : null;
@@ -163,6 +161,12 @@ export default async function handler(req, res) {
       if (session.subscription) {
         const sub = await stripe.subscriptions.retrieve(session.subscription);
         subscriptionMetadata = sub.metadata || {};
+      }
+
+      // Idempotency check: Skip if session already delivered (stored in Customer)
+      if (customer?.metadata?.last_fulfilled_session_id === session.id) {
+        console.log(`[Webhook] SKIPPING session ${session.id}: Already fulfilled.`);
+        return res.status(200).json({ received: true, info: 'Duplicate session' });
       }
 
       console.log('[Metadata Audit] Session:', JSON.stringify(session.metadata || {}));
@@ -190,13 +194,29 @@ export default async function handler(req, res) {
         const expiryDays = 90;
         const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
+
+        // Use 500 for SMTP errors to trigger Stripe retry
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+
+        // Update idempotency marker post-success
+        if (session.customer) {
+          await stripe.customers.update(session.customer, {
+            metadata: { ...customer.metadata, last_fulfilled_session_id: session.id }
+          });
+        }
+
         console.log(`[Webhook] SUCCESS: One-time license delivered via session.completed → ${customerEmail}`);
       } else {
         console.log(`[Webhook] Session is subscription mode (${session.subscription}). Fulfillment deferred to invoice.paid.`);
       }
     } catch (err) {
       console.error('[Webhook] ERROR in session.completed handler:', err);
+      // Return 500 for Stripe or SMTP errors so Stripe retries
+      const retryableErrorCodes = ['rate_limit', 'api_connection_error', 'api_error'];
+      if (retryableErrorCodes.includes(err.code) || err.message?.includes('SMTP')) {
+        return res.status(500).json({ error: 'Transient failure, please retry' });
+      }
+      return res.status(200).json({ received: true, error: 'Fulfillment failed' });
     }
   }
 
@@ -218,11 +238,17 @@ export default async function handler(req, res) {
     }
 
     try {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 2 });
       const [subscription, customer] = await Promise.all([
         stripe.subscriptions.retrieve(invoice.subscription),
         invoice.customer ? stripe.customers.retrieve(invoice.customer) : Promise.resolve(null)
       ]);
+
+      // Idempotency check: Skip if invoice already fulfilled (stored in Subscription)
+      if (subscription?.metadata?.last_fulfilled_invoice_id === invoice.id) {
+        console.log(`[Webhook] SKIPPING invoice ${invoice.id}: Already fulfilled.`);
+        return res.status(200).json({ received: true, info: 'Duplicate invoice' });
+      }
 
       // Audit all metadata sources
       console.log('[Metadata Audit] Invoice Metadata:', JSON.stringify(invoice.metadata || {}));
@@ -264,18 +290,29 @@ export default async function handler(req, res) {
       // Send renewal/creation email
       await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
-      // Increment renewal_count if it was a cycle renewal
+      // Atomic update of idempotency marker + renewal count
+      const updatedMetadata = {
+        ...subscription.metadata,
+        last_fulfilled_invoice_id: invoice.id
+      };
+
       if (invoice.billing_reason === 'subscription_cycle') {
-        await stripe.subscriptions.update(invoice.subscription, {
-          metadata: { ...subscription.metadata, renewal_count: String(renewalCount + 1) },
-        });
-        console.log(`[Webhook] SUCCESS: Subscription renewed (#${renewalCount + 1}) → ${customerEmail}`);
-      } else {
-        console.log(`[Webhook] SUCCESS: Subscription fulfilled → ${customerEmail}`);
+        updatedMetadata.renewal_count = String(renewalCount + 1);
       }
+
+      await stripe.subscriptions.update(invoice.subscription, {
+        metadata: updatedMetadata,
+      });
+
+      console.log(`[Webhook] SUCCESS: Subscription fulfilled/renewed (${invoice.billing_reason}) → ${customerEmail}`);
     } catch (err) {
       console.error('[Webhook] ERROR in invoice.paid fulfillment:', err);
-      return res.status(200).json({ received: true, error: 'Fulfillment error' });
+      // Return 500 for Stripe or SMTP errors so Stripe retries
+      const retryableErrorCodes = ['rate_limit', 'api_connection_error', 'api_error'];
+      if (retryableErrorCodes.includes(err.code) || err.message?.includes('SMTP')) {
+        return res.status(500).json({ error: 'Transient failure, please retry' });
+      }
+      return res.status(200).json({ received: true, error: 'Fulfillment failed' });
     }
   }
 
