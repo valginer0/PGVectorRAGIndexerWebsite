@@ -35,8 +35,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Validation: Coerce seats to a positive integer and clamp (min 1)
-    const seats = Math.max(1, parseInt(seatsInput || (tier === 'team' ? 5 : 25), 10));
+    // Validation: Coerce seats to a positive integer and clamp (min 1, max 500)
+    let seats = parseInt(seatsInput || (tier === 'team' ? 5 : 25), 10);
+    seats = Number.isSafeInteger(seats) ? Math.min(500, Math.max(1, seats)) : (tier === 'team' ? 5 : 25);
 
     const priceId = PRICE_MAP[tier];
     if (!priceId) {
