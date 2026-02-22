@@ -186,7 +186,8 @@ export default async function handler(req, res) {
       // Fulfill if it's a one-time payment
       if (session.mode === 'payment') {
         const expiryDays = 90;
-        const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, 0);
+        const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
+        const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
         console.log(`[Webhook] SUCCESS: One-time license delivered via session.completed → ${customerEmail}`);
       } else {
@@ -250,8 +251,11 @@ export default async function handler(req, res) {
       const diffSeconds = expiryTimestamp - nowSeconds;
       const expiryDays = Math.max(1, Math.ceil(diffSeconds / 86400));
 
+      // Map 'org'/'organization' tiers to 'team' edition for app compatibility
+      const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
+
       // Generate license key
-      const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, renewalCount);
+      const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, renewalCount);
 
       // Send renewal/creation email
       await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
