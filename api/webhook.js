@@ -390,6 +390,10 @@ export default async function handler(req, res) {
 
       // 3. Final atomic update: Marker + Renewal (Metadata Merge)
       const freshSubAfter = await stripe.subscriptions.retrieve(invoice.subscription);
+
+      const freshRenewalParsed = parseInt(freshSubAfter.metadata?.renewal_count || '0', 10);
+      const freshRenewalCount = Number.isSafeInteger(freshRenewalParsed) ? freshRenewalParsed : 0;
+
       const updatedMetadata = {
         ...freshSubAfter.metadata,
         last_fulfilled_invoice_id: invoice.id,
@@ -397,7 +401,7 @@ export default async function handler(req, res) {
         last_processing_invoice_at: ''
       };
       if (invoice.billing_reason === 'subscription_cycle') {
-        updatedMetadata.renewal_count = String(renewalCount + 1);
+        updatedMetadata.renewal_count = String(freshRenewalCount + 1);
       }
 
       await stripe.subscriptions.update(invoice.subscription, { metadata: updatedMetadata });
