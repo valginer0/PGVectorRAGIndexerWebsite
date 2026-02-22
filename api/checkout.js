@@ -22,16 +22,19 @@ export default async function handler(req, res) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    const PRICE_TEAM_YEARLY = 'price_1T3aT6Rc9V96VoFQxazszs8E';
-    const PRICE_ORG_YEARLY = 'price_1T1iKDRc9V96VoFQupw5Wlaa';
+    const isProduction = process.env.NODE_ENV === 'production' || (process.env.SITE_URL && process.env.SITE_URL.includes('ragvault.net'));
+    const PRICE_TEAM_YEARLY = isProduction ? 'price_1T3aT6Rc9V96VoFQxazszs8E' : null;
+    const PRICE_ORG_YEARLY = isProduction ? 'price_1T1iKDRc9V96VoFQupw5Wlaa' : null;
+
+    const { tier: tierInput, seats: seatsInput } = req.body || {};
+
+    // Normalize tier: org -> organization
+    const tier = (tierInput === 'org') ? 'organization' : tierInput;
 
     const PRICE_MAP = {
       team: process.env.STRIPE_PRICE_TEAM || PRICE_TEAM_YEARLY,
-      org: process.env.STRIPE_PRICE_ORG || PRICE_ORG_YEARLY,
       organization: process.env.STRIPE_PRICE_ORG || PRICE_ORG_YEARLY,
     };
-
-    const { tier, seats: seatsInput } = req.body || {};
 
     if (!tier || !PRICE_MAP[tier]) {
       return res.status(400).json({
@@ -44,7 +47,11 @@ export default async function handler(req, res) {
     seats = Number.isSafeInteger(seats) ? Math.min(500, Math.max(1, seats)) : (tier === 'team' ? 5 : 25);
 
     const priceId = PRICE_MAP[tier];
-    // No need for separate check since PRICE_MAP[tier] is guaranteed valid by above logic
+    if (!priceId) {
+      return res.status(500).json({
+        error: `Price ID not configured for tier: ${tier}. Contact hello@ragvault.net`,
+      });
+    }
 
 
     const session = await stripe.checkout.sessions.create({
