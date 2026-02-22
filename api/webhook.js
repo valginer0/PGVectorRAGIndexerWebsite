@@ -201,38 +201,63 @@ export default async function handler(req, res) {
       return res.status(200).json({ received: true });
     }
 
-    console.error('[Webhook] No customer email found for invoice:', invoice.id);
-    return res.status(200).json({ received: true, error: 'No email found' });
-  }
+    if (!invoice.subscription) {
+      console.warn(`[Webhook] invoice.paid for ${invoice.id} WITHOUT subscription. Skipping automatic fulfillment.`);
+      return res.status(200).json({ received: true });
+    }
 
-  // Calculate expiry from subscription.current_period_end
-  const expiryTimestamp = subscription.current_period_end;
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  const diffSeconds = expiryTimestamp - nowSeconds;
-  // Clamp to at least 1 day
-  const expiryDays = Math.max(1, Math.ceil(diffSeconds / 86400));
+    try {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const [subscription, customer] = await Promise.all([
+        stripe.subscriptions.retrieve(invoice.subscription),
+        stripe.customers.retrieve(invoice.customer)
+      ]);
 
-  // Generate license key
-  const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, renewalCount);
+      // Audit all metadata sources
+      console.log('[Metadata Audit] Invoice Metadata:', JSON.stringify(invoice.metadata || {}));
+      console.log('[Metadata Audit] Subscription Metadata:', JSON.stringify(subscription.metadata || {}));
+      console.log('[Metadata Audit] Customer Metadata:', JSON.stringify(customer.metadata || {}));
 
-  // Send renewal/creation email
-  await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+      // Extract with robust fallbacks
+      const tier = subscription.metadata?.tier || invoice.metadata?.tier || customer.metadata?.tier || 'team';
+      const seatsRaw = subscription.metadata?.seats || invoice.metadata?.seats || customer.metadata?.seats;
+      const seats = Number.isSafeInteger(parseInt(seatsRaw, 10)) ? parseInt(seatsRaw, 10) : (tier === 'team' ? 5 : 25);
+      const renewalCount = parseInt(subscription.metadata?.renewal_count || '0', 10);
+      const orgName = subscription.metadata?.org || customer.name || customer.email || 'Customer';
+      const customerEmail = invoice.customer_email || customer.email;
+      const customerName = invoice.customer_name || customer.name || '';
 
-  // Increment renewal_count if it was a cycle renewal
-  if (invoice.billing_reason === 'subscription_cycle') {
-    await stripe.subscriptions.update(invoice.subscription, {
-      metadata: { ...subscription.metadata, renewal_count: String(renewalCount + 1) },
-    });
-    console.log(`[Webhook] SUCCESS: Subscription renewed (#${renewalCount + 1}) → ${customerEmail}`);
-  } else {
-    console.log(`[Webhook] SUCCESS: Subscription fulfilled → ${customerEmail}`);
-  }
-} catch (err) {
-  console.error('[Webhook] ERROR in invoice.paid fulfillment:', err);
-  return res.status(200).json({ received: true, error: 'Fulfillment error' });
-}
+      if (!customerEmail) {
+        console.error('[Webhook] No customer email found for invoice:', invoice.id);
+        return res.status(200).json({ received: true, error: 'No email found' });
+      }
+
+      // Calculate expiry from subscription.current_period_end
+      const expiryTimestamp = subscription.current_period_end;
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const diffSeconds = expiryTimestamp - nowSeconds;
+      const expiryDays = Math.max(1, Math.ceil(diffSeconds / 86400));
+
+      // Generate license key
+      const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, renewalCount);
+
+      // Send renewal/creation email
+      await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+
+      // Increment renewal_count if it was a cycle renewal
+      if (invoice.billing_reason === 'subscription_cycle') {
+        await stripe.subscriptions.update(invoice.subscription, {
+          metadata: { ...subscription.metadata, renewal_count: String(renewalCount + 1) },
+        });
+        console.log(`[Webhook] SUCCESS: Subscription renewed (#${renewalCount + 1}) → ${customerEmail}`);
+      } else {
+        console.log(`[Webhook] SUCCESS: Subscription fulfilled → ${customerEmail}`);
+      }
+    } catch (err) {
+      console.error('[Webhook] ERROR in invoice.paid fulfillment:', err);
+      return res.status(200).json({ received: true, error: 'Fulfillment error' });
     }
   }
 
-return res.status(200).json({ received: true });
+  return res.status(200).json({ received: true });
 }
