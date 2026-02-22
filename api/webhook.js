@@ -137,10 +137,12 @@ export default async function handler(req, res) {
     console.log(`[Webhook] Signature Verified: ${event.type} (ID: ${event.id})`);
 
     // Safety check for other required secrets
-    const requiredSecrets = ['SMTP_USER', 'SMTP_PASSWORD', 'LICENSE_SIGNING_SECRET'];
+    const requiredSecrets = ['SMTP_USER', 'SMTP_PASSWORD', 'LICENSE_SIGNING_SECRET', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_SECRET_KEY'];
     const missing = requiredSecrets.filter(s => !process.env[s]);
     if (missing.length > 0) {
       console.error(`[Webhook] CRITICAL: Missing environment variables: ${missing.join(', ')}`);
+    } else {
+      console.log('[Webhook] Heartbeat: All secrets present.');
     }
   } catch (err) {
     console.error('[Webhook] Signature verification failed:', err.message);
@@ -233,7 +235,7 @@ export default async function handler(req, res) {
         const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
 
-        // Final broad retry detection for SMTP
+        console.log(`[Webhook] Fulfilling Payment Mode: ${edition} edition, ${seats} seats, ${customerEmail}`);
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
         // 3. Final Fulfillment Mark (Atomic & Data-Safe Merge)
@@ -379,8 +381,9 @@ export default async function handler(req, res) {
         }
       });
 
-      // Calculate Expiry
-      const expiryTimestamp = subscription.current_period_end;
+      // Calculate Expiry (Fresh re-fetch to ensure period_end is accurate)
+      const subForExpiry = await stripe.subscriptions.retrieve(invoice.subscription);
+      const expiryTimestamp = subForExpiry.current_period_end;
       const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now) / 86400));
       const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
 
