@@ -169,7 +169,9 @@ export default async function handler(req, res) {
       console.log('[Metadata Audit] Customer:', customer ? JSON.stringify(customer.metadata || {}) : '(null)');
       console.log('[Metadata Audit] Subscription:', JSON.stringify(subscriptionMetadata));
 
-      const tier = session.metadata?.tier || customer?.metadata?.tier || subscriptionMetadata?.tier || 'team';
+      const rawTier = session.metadata?.tier || customer?.metadata?.tier || subscriptionMetadata?.tier || 'team';
+      const tier = (rawTier === 'org') ? 'organization' : rawTier;
+
       const seatsRaw = session.metadata?.seats || customer?.metadata?.seats || subscriptionMetadata?.seats;
       const seatsParsed = parseInt(seatsRaw, 10);
       const seats = Number.isSafeInteger(seatsParsed) ? Math.min(500, Math.max(1, seatsParsed)) : (tier === 'team' ? 5 : 25);
@@ -228,7 +230,9 @@ export default async function handler(req, res) {
       console.log('[Metadata Audit] Customer Metadata:', JSON.stringify(customer?.metadata || {}));
 
       // Extract with robust fallbacks
-      const tier = subscription.metadata?.tier || invoice.metadata?.tier || customer?.metadata?.tier || 'team';
+      const rawTier = subscription.metadata?.tier || invoice.metadata?.tier || customer?.metadata?.tier || 'team';
+      const tier = (rawTier === 'org') ? 'organization' : rawTier;
+
       const seatsRaw = subscription.metadata?.seats || invoice.metadata?.seats || customer?.metadata?.seats;
       const seatsParsed = parseInt(seatsRaw, 10);
       const seats = Number.isSafeInteger(seatsParsed) ? Math.min(500, Math.max(1, seatsParsed)) : (tier === 'team' ? 5 : 25);
