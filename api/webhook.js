@@ -38,6 +38,7 @@ function createTransporter() {
 }
 
 async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays) {
+  console.log(`[sendLicenseEmail] Preparing to send email to ${customerEmail} (Tier: ${tier})`);
   const transporter = createTransporter();
   const expiryDate = new Date(Date.now() + expiryDays * 86400 * 1000).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -78,12 +79,18 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
     </div>
   `;
 
-  await transporter.sendMail({
-    from: `"RagVault" <${process.env.SMTP_USER}>`,
-    to: customerEmail,
-    subject: `Your RagVault ${tierDisplay} License Key`,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `"RagVault" <${process.env.SMTP_USER}>`,
+      to: customerEmail,
+      subject: `Your RagVault ${tierDisplay} License Key`,
+      html,
+    });
+    console.log(`[sendLicenseEmail] SUCCESS: Email sent to ${customerEmail}`);
+  } catch (error) {
+    console.error(`[sendLicenseEmail] ERROR: Failed to send email to ${customerEmail}:`, error.message);
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -127,14 +134,16 @@ export default async function handler(req, res) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+    console.log(`[Webhook] Event verified: ${event.type} (ID: ${event.id})`);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    console.error('[Webhook] Signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
   // Handle the checkout.session.completed event (initial purchase)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+    console.log(`[Webhook] Handling checkout.session.completed for ${session.id}`);
 
     try {
       const tier = session.metadata?.tier || 'team';
@@ -166,6 +175,7 @@ export default async function handler(req, res) {
   // Handle subscription renewal (invoice.paid for recurring billing cycles)
   if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
+    console.log(`[Webhook] Handling invoice.paid for ${invoice.id}, reason: ${invoice.billing_reason}`);
 
     // Process both initial subscription payment and renewals
     if (invoice.subscription && (invoice.billing_reason === 'subscription_create' || invoice.billing_reason === 'subscription_cycle')) {
