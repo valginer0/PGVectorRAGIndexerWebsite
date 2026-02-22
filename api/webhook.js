@@ -157,15 +157,23 @@ export default async function handler(req, res) {
     try {
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-      // Audit metadata from Session + Customer
+      // Audit metadata from Session + Customer (+ Subscription if exists)
       const customer = session.customer ? await stripe.customers.retrieve(session.customer) : null;
+      let subscriptionMetadata = {};
+      if (session.subscription) {
+        const sub = await stripe.subscriptions.retrieve(session.subscription);
+        subscriptionMetadata = sub.metadata || {};
+      }
+
       console.log('[Metadata Audit] Session:', JSON.stringify(session.metadata || {}));
       console.log('[Metadata Audit] Customer:', customer ? JSON.stringify(customer.metadata || {}) : '(null)');
-      console.log('[Metadata Audit] Subscription ID:', session.subscription || '(null)');
+      console.log('[Metadata Audit] Subscription:', JSON.stringify(subscriptionMetadata));
 
-      const tier = session.metadata?.tier || customer?.metadata?.tier || 'team';
-      const seatsRaw = session.metadata?.seats || customer?.metadata?.seats;
-      const seats = Number.isSafeInteger(parseInt(seatsRaw, 10)) ? parseInt(seatsRaw, 10) : (tier === 'team' ? 5 : 25);
+      const tier = session.metadata?.tier || customer?.metadata?.tier || subscriptionMetadata?.tier || 'team';
+      const seatsRaw = session.metadata?.seats || customer?.metadata?.seats || subscriptionMetadata?.seats;
+      const seatsParsed = parseInt(seatsRaw, 10);
+      const seats = Number.isSafeInteger(seatsParsed) ? Math.min(500, Math.max(1, seatsParsed)) : (tier === 'team' ? 5 : 25);
+
       const customerEmail = session.customer_details?.email || session.customer_email || customer?.email;
       const customerName = session.customer_details?.name || customer?.name || '';
       const orgName = customerName || customerEmail || 'Customer';
@@ -182,7 +190,7 @@ export default async function handler(req, res) {
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
         console.log(`[Webhook] SUCCESS: One-time license delivered via session.completed → ${customerEmail}`);
       } else {
-        console.log('[Webhook] Session is subscription mode. Fulfillment deferred to invoice.paid.');
+        console.log(`[Webhook] Session is subscription mode (${session.subscription}). Fulfillment deferred to invoice.paid.`);
       }
     } catch (err) {
       console.error('[Webhook] ERROR in session.completed handler:', err);
@@ -221,7 +229,9 @@ export default async function handler(req, res) {
       // Extract with robust fallbacks
       const tier = subscription.metadata?.tier || invoice.metadata?.tier || customer.metadata?.tier || 'team';
       const seatsRaw = subscription.metadata?.seats || invoice.metadata?.seats || customer.metadata?.seats;
-      const seats = Number.isSafeInteger(parseInt(seatsRaw, 10)) ? parseInt(seatsRaw, 10) : (tier === 'team' ? 5 : 25);
+      const seatsParsed = parseInt(seatsRaw, 10);
+      const seats = Number.isSafeInteger(seatsParsed) ? Math.min(500, Math.max(1, seatsParsed)) : (tier === 'team' ? 5 : 25);
+
       const renewalCount = parseInt(subscription.metadata?.renewal_count || '0', 10);
       const orgName = subscription.metadata?.org || customer.name || customer.email || 'Customer';
       const customerEmail = invoice.customer_email || customer.email;
