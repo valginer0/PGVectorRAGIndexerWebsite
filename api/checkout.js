@@ -27,13 +27,16 @@ export default async function handler(req, res) {
       organization: process.env.STRIPE_PRICE_ORG,
     };
 
-    const { tier, seats } = req.body || {};
+    const { tier, seats: seatsInput } = req.body || {};
 
     if (!tier || !PRICE_MAP[tier]) {
       return res.status(400).json({
         error: `Invalid tier. Must be one of: ${Object.keys(PRICE_MAP).join(', ')}`,
       });
     }
+
+    // Validation: Coerce seats to a positive integer and clamp (min 1)
+    const seats = Math.max(1, parseInt(seatsInput || (tier === 'team' ? 5 : 25), 10));
 
     const priceId = PRICE_MAP[tier];
     if (!priceId) {
@@ -53,13 +56,12 @@ export default async function handler(req, res) {
       ],
       metadata: {
         tier,
-        seats: String(seats || (tier === 'team' ? 5 : 25)),
+        seats: String(seats),
       },
       subscription_data: {
         metadata: {
           tier,
-          seats: String(seats || (tier === 'team' ? 5 : 25)),
-          org: '', // Placeholder for org name if needed later
+          seats: String(seats),
         },
       },
       success_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#purchase-success`,
