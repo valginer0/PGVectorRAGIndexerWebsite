@@ -80,7 +80,8 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error('Checkout error:', err.message || err);
-    return res.status(500).json({ error: 'Failed to create checkout session. Email hello@ragvault.net' });
+    const msg = err.message || err;
+    console.error('Checkout error:', msg);
+    return res.status(500).json({ error: `Checkout Error: ${msg}. Email hello@ragvault.net` });
   }
 }
