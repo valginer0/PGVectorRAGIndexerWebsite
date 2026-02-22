@@ -1289,16 +1289,17 @@
         });
 
         const data = await res.json();
+        const errorMessage = data.error || 'Something went wrong. Please try again or email hello@ragvault.net';
 
         if (data.url) {
           window.location.href = data.url;
         } else {
-          alert('Something went wrong. Please try again or email hello@ragvault.net');
+          alert(errorMessage);
           btn.innerHTML = originalText;
           btn.disabled = false;
         }
       } catch (err) {
-        alert('Connection error. Please try again or email hello@ragvault.net');
+        alert('Connection error: ' + err.message + '. Please try again or email hello@ragvault.net');
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
