@@ -54,8 +54,13 @@ export default async function handler(req, res) {
     }
 
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+    // 4. Mode Detection: Auto-detect if price is recurring
+    const price = await stripe.prices.retrieve(priceId);
+    const isRecurring = !!price.recurring;
+    const checkoutMode = isRecurring ? 'subscription' : 'payment';
+
+    const sessionOptions = {
+      mode: checkoutMode,
       payment_method_types: ['card'],
       line_items: [
         {
@@ -67,16 +72,22 @@ export default async function handler(req, res) {
         tier,
         seats: String(seats),
       },
-      subscription_data: {
+      success_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#purchase-success`,
+      cancel_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#pricing`,
+      billing_address_collection: 'required',
+    };
+
+    // Add subscription-specific data only if in subscription mode
+    if (checkoutMode === 'subscription') {
+      sessionOptions.subscription_data = {
         metadata: {
           tier,
           seats: String(seats),
         },
-      },
-      success_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#purchase-success`,
-      cancel_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#pricing`,
-      billing_address_collection: 'required',
-    });
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
