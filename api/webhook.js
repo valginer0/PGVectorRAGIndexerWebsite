@@ -134,7 +134,7 @@ export default async function handler(req, res) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-    console.log(`[Webhook] Event verified: ${event.type} (ID: ${event.id})`);
+    console.log(`[Webhook] Signature Verified: ${event.type} (ID: ${event.id})`);
 
     // Safety check for other required secrets
     const requiredSecrets = ['SMTP_USER', 'SMTP_PASSWORD', 'LICENSE_SIGNING_SECRET'];
@@ -242,11 +242,13 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('[Webhook] ERROR in session.completed handler:', err);
 
-      // Precision Retry: Stripe specific errors + all Nodemailer errors
+      // Precision Retry: Stripe types + all Nodemailer/Network failures
       const transientTypes = ['StripeRateLimitError', 'StripeAPIError', 'StripeConnectionError'];
-      const isTransient = transientTypes.includes(err.type) || err.message?.includes('SMTP') || err.syscall === 'connect' || err.code === 'ECONNRESET';
+      const isStripeTransient = transientTypes.includes(err.type);
+      const isNodemailerTransient = !!(err.responseCode || err.command || err.response || err.code === 'ETIMEDOUT');
+      const isNetworkTransient = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err.code) || err.syscall === 'connect';
 
-      if (isTransient) {
+      if (isStripeTransient || isNodemailerTransient || isNetworkTransient || err.message?.includes('SMTP')) {
         return res.status(500).json({ error: 'Transient failure, retrying...' });
       }
 
@@ -295,6 +297,11 @@ export default async function handler(req, res) {
       if (processingId === invoice.id) {
         console.warn(`[Webhook] Recovery detected for invoice ${invoice.id}: Pre-email process was interrupted. Proceeding.`);
       }
+
+      // Metadata Audit for Invoices
+      console.log('[Metadata Audit] Invoice:', JSON.stringify(invoice.metadata || {}));
+      console.log('[Metadata Audit] Subscription:', JSON.stringify(subscription.metadata || {}));
+      console.log('[Metadata Audit] Customer:', customer ? JSON.stringify(customer.metadata || {}) : '(null)');
 
       // Metadata extraction
       const rawTier = subscription.metadata?.tier || invoice.metadata?.tier || customer?.metadata?.tier || 'team';
@@ -351,10 +358,13 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('[Webhook] ERROR in invoice.paid fulfillment:', err);
 
+      // Precision Retry: Stripe types + all Nodemailer/Network failures
       const transientTypes = ['StripeRateLimitError', 'StripeAPIError', 'StripeConnectionError'];
-      const isTransient = transientTypes.includes(err.type) || err.message?.includes('SMTP') || err.syscall === 'connect' || err.code === 'ECONNRESET';
+      const isStripeTransient = transientTypes.includes(err.type);
+      const isNodemailerTransient = !!(err.responseCode || err.command || err.response || err.code === 'ETIMEDOUT');
+      const isNetworkTransient = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err.code) || err.syscall === 'connect';
 
-      if (isTransient) {
+      if (isStripeTransient || isNodemailerTransient || isNetworkTransient || err.message?.includes('SMTP')) {
         return res.status(500).json({ error: 'Transient failure, retrying...' });
       }
 
