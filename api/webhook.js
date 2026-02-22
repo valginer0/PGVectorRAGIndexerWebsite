@@ -88,7 +88,7 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
     });
     console.log(`[sendLicenseEmail] SUCCESS: Email sent to ${customerEmail}`);
   } catch (error) {
-    console.error(`[sendLicenseEmail] ERROR: Failed to send email to ${customerEmail}:`, error.message);
+    console.error(`[sendLicenseEmail] ERROR: Failed to send email to ${customerEmail}:`, error);
     throw error;
   }
 }
@@ -135,6 +135,15 @@ export default async function handler(req, res) {
       process.env.STRIPE_WEBHOOK_SECRET
     );
     console.log(`[Webhook] Event verified: ${event.type} (ID: ${event.id})`);
+
+    // Safety check for other required secrets
+    const requiredSecrets = ['SMTP_USER', 'SMTP_PASSWORD', 'LICENSE_SIGNING_SECRET'];
+    const missing = requiredSecrets.filter(s => !process.env[s]);
+    if (missing.length > 0) {
+      console.error(`[Webhook] CRITICAL: Missing environment variables: ${missing.join(', ')}`);
+    } else {
+      console.log('[Webhook] All environment variables present.');
+    }
   } catch (err) {
     console.error('[Webhook] Signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
