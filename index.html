@@ -811,7 +811,7 @@
             <li><span class="pricing-check">&#10003;</span> Activity and audit log</li>
             <li><span class="pricing-check">&#10003;</span> Priority email support</li>
           </ul>
-          <button onclick="startCheckout('team')" class="btn btn-primary pricing-btn">
+          <button onclick="startCheckout('team', event)" class="btn btn-primary pricing-btn">
             <span>Buy Team License</span>
           </button>
         </div>
@@ -836,7 +836,7 @@
             <li><span class="pricing-check">&#10003;</span> Dedicated onboarding call</li>
             <li><span class="pricing-check">&#10003;</span> 48h support SLA</li>
           </ul>
-          <button onclick="startCheckout('organization')" class="btn btn-secondary pricing-btn">
+          <button onclick="startCheckout('organization', event)" class="btn btn-secondary pricing-btn">
             <span>Buy Organization License</span>
           </button>
         </div>
@@ -1275,7 +1275,7 @@
 
   <!-- Stripe Checkout -->
   <script>
-    async function startCheckout(tier) {
+    async function startCheckout(tier, event) {
       const btn = event.target.closest('button');
       const originalText = btn.innerHTML;
       btn.innerHTML = '<span>Processing...</span>';
