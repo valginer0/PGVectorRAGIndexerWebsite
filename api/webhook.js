@@ -162,13 +162,17 @@ export default async function handler(req, res) {
         subscriptionMetadata = sub.metadata || {};
       }
 
-      // 1. Idempotency Check: Skip if already fulfilled OR currently processing
+      // 1. Recovery-Aware Idempotency Check
       const fulfilledId = customer?.metadata?.last_fulfilled_session_id;
       const processingId = customer?.metadata?.last_processing_session_id;
 
-      if (fulfilledId === session.id || (processingId === session.id && event.request?.id)) {
-        console.log(`[Webhook] SKIPPING session ${session.id}: Already processed or in progress.`);
-        return res.status(200).json({ received: true, info: 'Duplicate or concurrent session' });
+      if (fulfilledId === session.id) {
+        console.log(`[Webhook] SKIPPING session ${session.id}: Already fulfilled.`);
+        return res.status(200).json({ received: true, info: 'Duplicate session' });
+      }
+
+      if (processingId === session.id) {
+        console.warn(`[Webhook] Recovery detected for session ${session.id}: Pre-email process was interrupted. Proceeding.`);
       }
 
       // Metadata Audit
@@ -189,13 +193,19 @@ export default async function handler(req, res) {
 
       if (!customerEmail) {
         console.error('[Webhook] Permanent Error: No customer email found in session:', session.id);
+        // Clear processing marker if it was set
+        if (session.customer) {
+          await stripe.customers.update(session.customer, {
+            metadata: { ...customer?.metadata, last_processing_session_id: '' }
+          });
+        }
         return res.status(200).json({ received: true, warning: 'No email found' });
       }
 
-      // 2. Mark as Processing (Crash-safety)
+      // 2. Mark as Processing
       if (session.customer) {
         await stripe.customers.update(session.customer, {
-          metadata: { ...customer.metadata, last_processing_session_id: session.id }
+          metadata: { ...customer?.metadata, last_processing_session_id: session.id }
         });
       }
 
@@ -208,13 +218,13 @@ export default async function handler(req, res) {
         // Use 500 for transient SMTP errors
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
-        // 3. Final Fulfillment Mark (Atomic)
+        // 3. Final Fulfillment Mark (Atomic & Data-Safe Merge)
         if (session.customer) {
           await stripe.customers.update(session.customer, {
             metadata: {
               ...customer.metadata,
               last_fulfilled_session_id: session.id,
-              last_processing_session_id: '' // Clear processing marker
+              last_processing_session_id: ''
             }
           });
         }
@@ -225,23 +235,30 @@ export default async function handler(req, res) {
         // Clear processing marker since we're deferring
         if (session.customer) {
           await stripe.customers.update(session.customer, {
-            metadata: { ...customer.metadata, last_processing_session_id: '' }
+            metadata: { ...customer?.metadata, last_processing_session_id: '' }
           });
         }
       }
     } catch (err) {
       console.error('[Webhook] ERROR in session.completed handler:', err);
 
-      // Determine if retryable (Stripe errors or SMTP failures)
-      const isTransient = err.type?.startsWith('Stripe') || err.message?.includes('SMTP') || err.name === 'Error';
+      // Precision Retry: Stripe specific errors + all Nodemailer errors
+      const transientTypes = ['StripeRateLimitError', 'StripeAPIError', 'StripeConnectionError'];
+      const isTransient = transientTypes.includes(err.type) || err.message?.includes('SMTP') || err.syscall === 'connect' || err.code === 'ECONNRESET';
+
       if (isTransient) {
         return res.status(500).json({ error: 'Transient failure, retrying...' });
       }
 
-      // Clear processing marker on permanent failure to allow manual retry
+      // Permanent failure cleanup
       try {
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-        if (session.customer) await stripe.customers.update(session.customer, { metadata: { last_processing_session_id: '' } });
+        if (session.customer) {
+          const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+          const currentCustomer = await stripeClient.customers.retrieve(session.customer);
+          await stripeClient.customers.update(session.customer, {
+            metadata: { ...currentCustomer.metadata, last_processing_session_id: '' }
+          });
+        }
       } catch (e) { console.error('Failed to clear processing marker:', e); }
 
       return res.status(200).json({ received: true, error: 'Permanent failure' });
@@ -266,13 +283,17 @@ export default async function handler(req, res) {
         invoice.customer ? stripe.customers.retrieve(invoice.customer) : Promise.resolve(null)
       ]);
 
-      // 1. Idempotency Check
+      // 1. Recovery-Aware Idempotency Check
       const fulfilledId = subscription?.metadata?.last_fulfilled_invoice_id;
       const processingId = subscription?.metadata?.last_processing_invoice_id;
 
-      if (fulfilledId === invoice.id || (processingId === invoice.id && event.request?.id)) {
-        console.log(`[Webhook] SKIPPING invoice ${invoice.id}: Already processed or in progress.`);
-        return res.status(200).json({ received: true, info: 'Duplicate or concurrent invoice' });
+      if (fulfilledId === invoice.id) {
+        console.log(`[Webhook] SKIPPING invoice ${invoice.id}: Already fulfilled.`);
+        return res.status(200).json({ received: true, info: 'Duplicate invoice' });
+      }
+
+      if (processingId === invoice.id) {
+        console.warn(`[Webhook] Recovery detected for invoice ${invoice.id}: Pre-email process was interrupted. Proceeding.`);
       }
 
       // Metadata extraction
@@ -292,10 +313,14 @@ export default async function handler(req, res) {
 
       if (!customerEmail) {
         console.error('[Webhook] Permanent Error: No email for invoice:', invoice.id);
+        // Clear processing marker
+        await stripe.subscriptions.update(invoice.subscription, {
+          metadata: { ...subscription.metadata, last_processing_invoice_id: '' }
+        });
         return res.status(200).json({ received: true, error: 'No email found' });
       }
 
-      // 2. Mark as Processing
+      // 2. Mark as Processing (Metadata Merge)
       await stripe.subscriptions.update(invoice.subscription, {
         metadata: { ...subscription.metadata, last_processing_invoice_id: invoice.id }
       });
@@ -310,7 +335,7 @@ export default async function handler(req, res) {
       const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, renewalCount);
       await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
-      // 3. Final atomic update: Marker + Renewal
+      // 3. Final atomic update: Marker + Renewal (Metadata Merge)
       const updatedMetadata = {
         ...subscription.metadata,
         last_fulfilled_invoice_id: invoice.id,
@@ -326,15 +351,22 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('[Webhook] ERROR in invoice.paid fulfillment:', err);
 
-      const isTransient = err.type?.startsWith('Stripe') || err.message?.includes('SMTP') || err.name === 'Error';
+      const transientTypes = ['StripeRateLimitError', 'StripeAPIError', 'StripeConnectionError'];
+      const isTransient = transientTypes.includes(err.type) || err.message?.includes('SMTP') || err.syscall === 'connect' || err.code === 'ECONNRESET';
+
       if (isTransient) {
         return res.status(500).json({ error: 'Transient failure, retrying...' });
       }
 
-      // Clear processing marker on permanent failure
+      // Permanent failure cleanup
       try {
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-        if (invoice.subscription) await stripe.subscriptions.update(invoice.subscription, { metadata: { last_processing_invoice_id: '' } });
+        if (invoice.subscription) {
+          const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+          const currentSub = await stripeClient.subscriptions.retrieve(invoice.subscription);
+          await stripeClient.subscriptions.update(invoice.subscription, {
+            metadata: { ...currentSub.metadata, last_processing_invoice_id: '' }
+          });
+        }
       } catch (e) { console.error('Failed to clear processing marker:', e); }
 
       return res.status(200).json({ received: true, error: 'Permanent failure' });
