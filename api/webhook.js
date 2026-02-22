@@ -218,24 +218,26 @@ export default async function handler(req, res) {
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
       const [subscription, customer] = await Promise.all([
         stripe.subscriptions.retrieve(invoice.subscription),
-        stripe.customers.retrieve(invoice.customer)
+        invoice.customer ? stripe.customers.retrieve(invoice.customer) : Promise.resolve(null)
       ]);
 
       // Audit all metadata sources
       console.log('[Metadata Audit] Invoice Metadata:', JSON.stringify(invoice.metadata || {}));
       console.log('[Metadata Audit] Subscription Metadata:', JSON.stringify(subscription.metadata || {}));
-      console.log('[Metadata Audit] Customer Metadata:', JSON.stringify(customer.metadata || {}));
+      console.log('[Metadata Audit] Customer Metadata:', JSON.stringify(customer?.metadata || {}));
 
       // Extract with robust fallbacks
-      const tier = subscription.metadata?.tier || invoice.metadata?.tier || customer.metadata?.tier || 'team';
-      const seatsRaw = subscription.metadata?.seats || invoice.metadata?.seats || customer.metadata?.seats;
+      const tier = subscription.metadata?.tier || invoice.metadata?.tier || customer?.metadata?.tier || 'team';
+      const seatsRaw = subscription.metadata?.seats || invoice.metadata?.seats || customer?.metadata?.seats;
       const seatsParsed = parseInt(seatsRaw, 10);
       const seats = Number.isSafeInteger(seatsParsed) ? Math.min(500, Math.max(1, seatsParsed)) : (tier === 'team' ? 5 : 25);
 
-      const renewalCount = parseInt(subscription.metadata?.renewal_count || '0', 10);
-      const orgName = subscription.metadata?.org || customer.name || customer.email || 'Customer';
-      const customerEmail = invoice.customer_email || customer.email;
-      const customerName = invoice.customer_name || customer.name || '';
+      const renewalParsed = parseInt(subscription.metadata?.renewal_count || '0', 10);
+      const renewalCount = Number.isSafeInteger(renewalParsed) ? renewalParsed : 0;
+
+      const orgName = subscription.metadata?.org || customer?.name || customer?.email || 'Customer';
+      const customerEmail = invoice.customer_email || customer?.email;
+      const customerName = invoice.customer_name || customer?.name || '';
 
       if (!customerEmail) {
         console.error('[Webhook] No customer email found for invoice:', invoice.id);
