@@ -43,7 +43,7 @@ export default async function handler(req, res) {
     }
 
     const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
+      mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
@@ -54,6 +54,13 @@ export default async function handler(req, res) {
       metadata: {
         tier,
         seats: String(seats || (tier === 'team' ? 5 : 25)),
+      },
+      subscription_data: {
+        metadata: {
+          tier,
+          seats: String(seats || (tier === 'team' ? 5 : 25)),
+          org: '', // Placeholder for org name if needed later
+        },
       },
       success_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#purchase-success`,
       cancel_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#pricing`,

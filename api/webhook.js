@@ -149,10 +149,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
-  // Handle the checkout.session.completed event (initial purchase)
+  // Handle the checkout.session.completed event (initial payment confirm)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     console.log(`[Webhook] Handling checkout.session.completed for ${session.id}`);
+
+    // Audit metadata sources
+    console.log('[Metadata Audit] Session:', JSON.stringify(session.metadata || {}));
+    console.log('[Metadata Audit] Subscription:', session.subscription ? '(exists)' : '(null)');
 
     try {
       const tier = session.metadata?.tier || 'team';
@@ -160,67 +164,79 @@ export default async function handler(req, res) {
       const customerEmail = session.customer_details?.email || session.customer_email;
       const customerName = session.customer_details?.name || '';
       const orgName = customerName || customerEmail || 'Customer';
-      const expiryDays = 90;
+      const expiryDays = 90; // Fallback
 
       if (!customerEmail) {
-        console.error('No customer email found in session:', session.id);
+        console.error('[Webhook] No customer email found in session:', session.id);
         return res.status(200).json({ received: true, warning: 'No email — manual follow-up needed' });
       }
 
-      // Generate license key (initial purchase, renewal_count = 0)
-      const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, 0);
-
-      // Send license email
-      await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
-
-      console.log(`License delivered: ${tier} (${seats} seats, ${expiryDays}d) → ${customerEmail}`);
+      // We only send from session.completed if it's NOT a subscription (one-time)
+      // or if we want immediate delivery without waiting for the first invoice.
+      // Since we shifted to SUBSCRIPTION mode, invoice.paid is the gold standard,
+      // but we'll fulfill here if logic permits (e.g. for trial or instant setup).
+      if (session.mode === 'payment') {
+        const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, 0);
+        await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+        console.log(`[Webhook] SUCCESS: License delivered via session.completed → ${customerEmail}`);
+      } else {
+        console.log('[Webhook] Subscription mode detected. Offloading fulfillment to invoice.paid.');
+      }
     } catch (err) {
-      console.error('License delivery failed:', err);
-      // Still return 200 so Stripe doesn't retry — handle manually
-      return res.status(200).json({ received: true, error: 'License delivery failed — manual follow-up needed' });
+      console.error('[Webhook] ERROR in session.completed handler:', err);
     }
   }
 
-  // Handle subscription renewal (invoice.paid for recurring billing cycles)
+  // Handle subscription renewal & creation (invoice.paid)
   if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
     console.log(`[Webhook] Handling invoice.paid for ${invoice.id}, reason: ${invoice.billing_reason}`);
 
-    // Process both initial subscription payment and renewals
-    if (invoice.subscription && (invoice.billing_reason === 'subscription_create' || invoice.billing_reason === 'subscription_cycle')) {
+    if (invoice.subscription) {
       try {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-        // Get subscription to read metadata
         const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
-        const tier = subscription.metadata?.tier || 'team';
-        const seats = parseInt(subscription.metadata?.seats || (tier === 'team' ? '5' : '25'), 10);
-        const renewalCount = parseInt(subscription.metadata?.renewal_count || '0', 10) + 1;
+
+        // Audit metadata
+        console.log('[Metadata Audit] Invoice Metadata:', JSON.stringify(invoice.metadata || {}));
+        console.log('[Metadata Audit] Subscription Metadata:', JSON.stringify(subscription.metadata || {}));
+
+        const tier = subscription.metadata?.tier || invoice.metadata?.tier || 'team';
+        const seats = parseInt(subscription.metadata?.seats || invoice.metadata?.seats || (tier === 'team' ? '5' : '25'), 10);
+        const renewalCount = parseInt(subscription.metadata?.renewal_count || '0', 10);
         const orgName = subscription.metadata?.org || invoice.customer_name || invoice.customer_email || 'Customer';
         const customerEmail = invoice.customer_email;
         const customerName = invoice.customer_name || '';
-        const expiryDays = 90;
+
+        // Calculate expiry from current_period_end
+        const expiryDate = new Date(subscription.current_period_end * 1000);
+        const now = new Date();
+        const diffTime = Math.abs(expiryDate - now);
+        const expiryDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (!customerEmail) {
-          console.error('No customer email on renewal invoice:', invoice.id);
-          return res.status(200).json({ received: true, warning: 'No email — manual follow-up needed' });
+          console.error('[Webhook] No customer email on invoice:', invoice.id);
+          return res.status(200).json({ received: true, warning: 'No email' });
         }
 
-        // Generate fresh license key with incremented renewal count
+        // Generate license key
         const licenseKey = generateLicenseKey(tier, orgName, seats, expiryDays, renewalCount);
 
-        // Send renewal email
+        // Send email
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
-        // Update renewal count in subscription metadata
-        await stripe.subscriptions.update(invoice.subscription, {
-          metadata: { ...subscription.metadata, renewal_count: String(renewalCount) },
-        });
-
-        console.log(`License renewed (#${renewalCount}): ${tier} (${seats} seats, ${expiryDays}d) → ${customerEmail}`);
+        // If it's a renewal (subscription_cycle), increment renewal_count
+        if (invoice.billing_reason === 'subscription_cycle') {
+          await stripe.subscriptions.update(invoice.subscription, {
+            metadata: { ...subscription.metadata, renewal_count: String(renewalCount + 1) },
+          });
+          console.log(`[Webhook] SUCCESS: Subscription renewed (#${renewalCount + 1}) → ${customerEmail}`);
+        } else {
+          console.log(`[Webhook] SUCCESS: Subscription created → ${customerEmail}`);
+        }
       } catch (err) {
-        console.error('License renewal failed:', err);
-        return res.status(200).json({ received: true, error: 'License renewal failed — manual follow-up needed' });
+        console.error('[Webhook] ERROR in invoice.paid handler:', err);
+        return res.status(200).json({ received: true, error: 'Fulfillment failed' });
       }
     }
   }
