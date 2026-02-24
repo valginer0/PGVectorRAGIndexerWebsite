@@ -303,12 +303,25 @@ export default async function handler(req, res) {
   // Handle subscription creation & renewals (invoice.paid)
   if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
-    console.log(`[Webhook] Handling invoice.paid for ${invoice.id}, reason: ${invoice.billing_reason}`);
+    console.log(`[Webhook] Handling invoice.paid for ${invoice.id}, reason: ${invoice.billing_reason}, subscription: ${invoice.subscription}`);
 
-    const validReasons = ['subscription_create', 'subscription_cycle'];
-    if (!validReasons.includes(invoice.billing_reason) || !invoice.subscription) {
-      console.log(`[Webhook] Skipping invoice.paid: Non-subscription event or missing subscription.`);
+    // Primary guard: must be tied to a subscription
+    if (!invoice.subscription) {
+      console.log(`[Webhook] Skipping invoice.paid: No subscription ID on invoice ${invoice.id}.`);
       return res.status(200).json({ received: true });
+    }
+
+    // Secondary guard: skip non-subscription billing reasons (e.g. manual standalone invoices)
+    const skipReasons = ['manual'];
+    if (skipReasons.includes(invoice.billing_reason) && !invoice.subscription) {
+      console.log(`[Webhook] Skipping invoice.paid: billing_reason=${invoice.billing_reason} with no subscription.`);
+      return res.status(200).json({ received: true });
+    }
+
+    // Allow: subscription_create, subscription_cycle, subscription_update, subscription_threshold, and others tied to a subscription
+    const validReasons = ['subscription_create', 'subscription_cycle', 'subscription_update', 'subscription_threshold'];
+    if (!validReasons.includes(invoice.billing_reason)) {
+      console.log(`[Webhook] Note: Unusual billing_reason=${invoice.billing_reason} but subscription=${invoice.subscription} — proceeding with fulfillment.`);
     }
 
     try {
