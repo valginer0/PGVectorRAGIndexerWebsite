@@ -18,7 +18,8 @@ function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
     jti: crypto.randomUUID(),
     renewal_count: renewalCount,
   };
-  return jwt.sign(payload, process.env.LICENSE_SIGNING_SECRET, { algorithm: 'HS256' });
+  // Use RS256 with the private key from environment
+  return jwt.sign(payload, process.env.LICENSE_PRIVATE_KEY, { algorithm: 'RS256' });
 }
 
 // ---------------------------------------------------------------------------
