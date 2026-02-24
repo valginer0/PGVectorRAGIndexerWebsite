@@ -138,7 +138,7 @@ export default async function handler(req, res) {
     console.log(`[Webhook] Signature Verified: ${event.type} (ID: ${event.id})`);
 
     // Safety check for other required secrets
-    const requiredSecrets = ['SMTP_USER', 'SMTP_PASSWORD', 'LICENSE_SIGNING_SECRET', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_SECRET_KEY'];
+    const requiredSecrets = ['SMTP_USER', 'SMTP_PASSWORD', 'LICENSE_PRIVATE_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_SECRET_KEY'];
     const missing = requiredSecrets.filter(s => !process.env[s]);
     if (missing.length > 0) {
       console.error(`[Webhook] CRITICAL: Missing environment variables: ${missing.join(', ')}`);
