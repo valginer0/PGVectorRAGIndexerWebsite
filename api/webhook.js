@@ -19,7 +19,9 @@ function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
     renewal_count: renewalCount,
   };
   // Vercel stores multiline env vars with literal \n — normalize to real newlines for PEM parsing
-  const privateKey = (process.env.LICENSE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+  const rawKey = process.env.LICENSE_PRIVATE_KEY || '';
+  const privateKey = rawKey.replace(/\\n/g, '\n');
+  console.log(`[Webhook] LICENSE_PRIVATE_KEY diagnostics: length=${rawKey.length}, hasRealNL=${rawKey.includes('\n')}, hasLiteralNL=${rawKey.includes('\\n')}, first60=${JSON.stringify(rawKey.substring(0, 60))}`);
   return jwt.sign(payload, privateKey, { algorithm: 'RS256' });
 }
 
