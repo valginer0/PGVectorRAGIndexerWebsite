@@ -303,31 +303,30 @@ export default async function handler(req, res) {
   // Handle subscription creation & renewals (invoice.paid)
   if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
-    console.log(`[Webhook] Handling invoice.paid for ${invoice.id}, reason: ${invoice.billing_reason}, subscription: ${invoice.subscription}`);
+
+    // Stripe sometimes fires invoice.paid with invoice.subscription=null when the invoice is
+    // created before the subscription is fully linked. Fall back to line items.
+    const subscriptionId = invoice.subscription ||
+      invoice.lines?.data?.find(line => line.subscription)?.subscription;
+
+    console.log(`[Webhook] Handling invoice.paid for ${invoice.id}, reason: ${invoice.billing_reason}, subscription: ${subscriptionId} (invoice.subscription=${invoice.subscription})`);
 
     // Primary guard: must be tied to a subscription
-    if (!invoice.subscription) {
-      console.log(`[Webhook] Skipping invoice.paid: No subscription ID on invoice ${invoice.id}.`);
+    if (!subscriptionId) {
+      console.log(`[Webhook] Skipping invoice.paid: No subscription ID found on invoice ${invoice.id} or its line items.`);
       return res.status(200).json({ received: true });
     }
 
-    // Secondary guard: skip non-subscription billing reasons (e.g. manual standalone invoices)
-    const skipReasons = ['manual'];
-    if (skipReasons.includes(invoice.billing_reason) && !invoice.subscription) {
-      console.log(`[Webhook] Skipping invoice.paid: billing_reason=${invoice.billing_reason} with no subscription.`);
-      return res.status(200).json({ received: true });
-    }
-
-    // Allow: subscription_create, subscription_cycle, subscription_update, subscription_threshold, and others tied to a subscription
+    // Allow any billing_reason as long as we have a subscription
     const validReasons = ['subscription_create', 'subscription_cycle', 'subscription_update', 'subscription_threshold'];
     if (!validReasons.includes(invoice.billing_reason)) {
-      console.log(`[Webhook] Note: Unusual billing_reason=${invoice.billing_reason} but subscription=${invoice.subscription} — proceeding with fulfillment.`);
+      console.log(`[Webhook] Note: Unusual billing_reason=${invoice.billing_reason} for subscription ${subscriptionId} — proceeding.`);
     }
 
     try {
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 2 });
       const [subscription, customer] = await Promise.all([
-        stripe.subscriptions.retrieve(invoice.subscription),
+        stripe.subscriptions.retrieve(subscriptionId),
         invoice.customer ? stripe.customers.retrieve(invoice.customer) : Promise.resolve(null)
       ]);
 
@@ -375,8 +374,8 @@ export default async function handler(req, res) {
       if (!customerEmail) {
         console.error('[Webhook] Permanent Error: No email for invoice:', invoice.id);
         // Clear processing marker
-        const finalSubFetch = await stripe.subscriptions.retrieve(invoice.subscription);
-        await stripe.subscriptions.update(invoice.subscription, {
+        const finalSubFetch = await stripe.subscriptions.retrieve(subscriptionId);
+        await stripe.subscriptions.update(subscriptionId, {
           metadata: {
             ...finalSubFetch.metadata,
             last_processing_invoice_id: '',
@@ -387,8 +386,8 @@ export default async function handler(req, res) {
       }
 
       // 2. Mark as Processing (Metadata Merge + Timestamp)
-      const freshSubBefore = await stripe.subscriptions.retrieve(invoice.subscription);
-      await stripe.subscriptions.update(invoice.subscription, {
+      const freshSubBefore = await stripe.subscriptions.retrieve(subscriptionId);
+      await stripe.subscriptions.update(subscriptionId, {
         metadata: {
           ...freshSubBefore.metadata,
           last_processing_invoice_id: invoice.id,
@@ -397,7 +396,7 @@ export default async function handler(req, res) {
       });
 
       // Calculate Expiry (Fresh re-fetch to ensure period_end is accurate)
-      const subForExpiry = await stripe.subscriptions.retrieve(invoice.subscription);
+      const subForExpiry = await stripe.subscriptions.retrieve(subscriptionId);
       const expiryTimestamp = subForExpiry.current_period_end;
       const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now) / 86400));
       const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
@@ -407,7 +406,7 @@ export default async function handler(req, res) {
       await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
 
       // 3. Final atomic update: Marker + Renewal (Metadata Merge)
-      const freshSubAfter = await stripe.subscriptions.retrieve(invoice.subscription);
+      const freshSubAfter = await stripe.subscriptions.retrieve(subscriptionId);
 
       const freshRenewalParsed = parseInt(freshSubAfter.metadata?.renewal_count || '0', 10);
       const freshRenewalCount = Number.isSafeInteger(freshRenewalParsed) ? freshRenewalParsed : 0;
@@ -422,7 +421,7 @@ export default async function handler(req, res) {
         updatedMetadata.renewal_count = String(freshRenewalCount + 1);
       }
 
-      await stripe.subscriptions.update(invoice.subscription, { metadata: updatedMetadata });
+      await stripe.subscriptions.update(subscriptionId, { metadata: updatedMetadata });
 
       console.log(`[Webhook] SUCCESS: Subscription fulfilled/renewed (${invoice.billing_reason}) → ${customerEmail}`);
     } catch (err) {
@@ -440,10 +439,10 @@ export default async function handler(req, res) {
 
       // Permanent failure cleanup (Fresh re-fetch for safety)
       try {
-        if (invoice.subscription) {
+        if (subscriptionId) {
           const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
-          const freshSubCleanup = await stripeClient.subscriptions.retrieve(invoice.subscription);
-          await stripeClient.subscriptions.update(invoice.subscription, {
+          const freshSubCleanup = await stripeClient.subscriptions.retrieve(subscriptionId);
+          await stripeClient.subscriptions.update(subscriptionId, {
             metadata: {
               ...freshSubCleanup.metadata,
               last_processing_invoice_id: '',
