@@ -254,9 +254,35 @@ export default async function handler(req, res) {
         }
 
         console.log(`[Webhook] SUCCESS: One-time license delivered via session.completed → ${customerEmail}`);
+      } else if (session.mode === 'subscription' && session.subscription) {
+        // Fulfill subscription initial license directly here.
+        // Stripe's invoice.paid fires with invoice.subscription=null during checkout creation,
+        // so we cannot reliably use invoice.paid for initial delivery.
+        // session.subscription is always present here.
+        const sub = await stripe.subscriptions.retrieve(session.subscription);
+        const now2 = Math.floor(Date.now() / 1000);
+        const expiryTimestamp = sub.current_period_end;
+        const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now2) / 86400));
+        const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
+
+        const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
+        console.log(`[Webhook] Subscription license generated (${expiryDays} days). Sending to ${customerEmail}...`);
+        await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+
+        if (session.customer) {
+          const finalCustomerFetch = await stripe.customers.retrieve(session.customer);
+          await stripe.customers.update(session.customer, {
+            metadata: {
+              ...finalCustomerFetch.metadata,
+              last_fulfilled_session_id: session.id,
+              last_processing_session_id: '',
+              last_processing_session_at: ''
+            }
+          });
+        }
+        console.log(`[Webhook] SUCCESS: Subscription license delivered via session.completed → ${customerEmail}`);
       } else {
-        console.log(`[Webhook] Session is subscription mode (${session.subscription}). Fulfillment deferred to invoice.paid.`);
-        // Clear processing marker since we're deferring
+        console.log(`[Webhook] Session mode=${session.mode}, no subscription — no action taken.`);
         if (session.customer) {
           const finalCustomerFetch = await stripe.customers.retrieve(session.customer);
           await stripe.customers.update(session.customer, {
