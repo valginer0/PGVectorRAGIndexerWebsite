@@ -18,10 +18,20 @@ function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
     jti: crypto.randomUUID(),
     renewal_count: renewalCount,
   };
-  // Vercel stores multiline env vars with literal \n — normalize to real newlines for PEM parsing
-  const rawKey = process.env.LICENSE_PRIVATE_KEY || '';
-  const privateKey = rawKey.replace(/\\n/g, '\n');
-  console.log(`[Webhook] LICENSE_PRIVATE_KEY diagnostics: length=${rawKey.length}, hasRealNL=${rawKey.includes('\n')}, hasLiteralNL=${rawKey.includes('\\n')}, first60=${JSON.stringify(rawKey.substring(0, 60))}`);
+  // Resolve the private key from env var — supports two formats:
+  //   1. Pure base64 body (no headers, no newlines) — most reliable in Vercel
+  //   2. Full PEM (with -----BEGIN/END----- headers, real or literal \n)
+  const rawKey = (process.env.LICENSE_PRIVATE_KEY || '').trim();
+  let privateKey;
+  if (rawKey.startsWith('-----')) {
+    // Full PEM: normalize literal \n to real newlines
+    privateKey = rawKey.replace(/\\n/g, '\n');
+  } else {
+    // Base64 body only: reconstruct PEM (insert newlines every 64 chars)
+    const b64 = rawKey.replace(/\s/g, '');
+    const lines = b64.match(/.{1,64}/g) || [];
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
+  }
   return jwt.sign(payload, privateKey, { algorithm: 'RS256' });
 }
 
