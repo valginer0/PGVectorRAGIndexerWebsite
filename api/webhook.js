@@ -8,21 +8,34 @@ import crypto from 'crypto';
 // ---------------------------------------------------------------------------
 
 function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
+  // Ensure valid numeric inputs for iat/exp
   const now = Math.floor(Date.now() / 1000);
+
+  // Guard for invalid 'days' causing NaN exp (results in exp: null in JSON)
+  const validDays = Number.isFinite(Number(days)) ? Number(days) : 90;
+  const expiry = Math.floor(now + (validDays * 86400));
+
   const payload = {
     edition,
     org: orgName,
-    seats,
+    seats: Number.isSafeInteger(parseInt(seats, 10)) ? parseInt(seats, 10) : 1,
     iat: now,
-    exp: now + days * 86400,
+    exp: expiry,
     jti: crypto.randomUUID(),
     renewal_count: renewalCount,
   };
+
+  console.log(`[generateLicenseKey] Payload: Edition=${payload.edition}, Org=${payload.org}, Seats=${payload.seats}, Expiry=${new Date(payload.exp * 1000).toISOString()}`);
+
   // Resolve the private key from env var — supports two formats:
   //   1. Pure base64 body (no headers, no newlines) — most reliable in Vercel
   //   2. Full PEM (with -----BEGIN/END----- headers, real or literal \n)
   const rawKey = (process.env.LICENSE_PRIVATE_KEY || '').trim();
   let privateKey;
+  if (!rawKey) {
+    throw new Error('LICENSE_PRIVATE_KEY environment variable is missing');
+  }
+
   if (rawKey.startsWith('-----')) {
     // Full PEM: normalize literal \n to real newlines
     privateKey = rawKey.replace(/\\n/g, '\n');
