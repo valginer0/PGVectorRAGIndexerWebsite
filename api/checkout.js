@@ -86,6 +86,7 @@ export default async function handler(req, res) {
       success_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#purchase-success`,
       cancel_url: `${process.env.SITE_URL || 'https://www.ragvault.net'}/index.html#pricing`,
       billing_address_collection: 'required',
+      allow_promotion_codes: true,
     };
 
     // Add subscription-specific data only if in subscription mode
