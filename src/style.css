@@ -1045,6 +1045,67 @@ code {
   padding: var(--spacing-3xl) 0;
 }
 
+/* ----- Billing toggle ----- */
+.billing-toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.billing-toggle {
+  display: inline-flex;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 0;
+}
+
+.billing-toggle-btn {
+  position: relative;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 8px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.billing-toggle-btn--active {
+  background: var(--gradient-primary);
+  color: #ffffff;
+}
+
+.billing-toggle-btn:not(.billing-toggle-btn--active):hover {
+  color: var(--color-text-primary);
+}
+
+.billing-save-badge {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: rgba(0, 212, 170, 0.2);
+  color: var(--color-accent-green);
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+/* Price fade animation */
+.pricing-amount,
+.pricing-period {
+  transition: opacity 150ms ease;
+}
+
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
