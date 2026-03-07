@@ -121,6 +121,29 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
 }
 
 // ---------------------------------------------------------------------------
+// Stripe API compatibility helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract current_period_end from a Stripe subscription object.
+ * Newer Stripe API versions (2024+) moved this field from the subscription
+ * top-level to the subscription *item* level.
+ */
+function getSubscriptionPeriodEnd(sub) {
+  // Try top-level first (legacy API versions)
+  if (sub.current_period_end) return sub.current_period_end;
+  // New API: field lives on the subscription item
+  const itemEnd = sub.items?.data?.[0]?.current_period_end;
+  if (itemEnd) return itemEnd;
+  // Last resort: compute from billing_cycle_anchor + plan interval
+  if (sub.billing_cycle_anchor && sub.plan?.interval === 'year') {
+    const years = sub.plan.interval_count || 1;
+    return sub.billing_cycle_anchor + (years * 365.25 * 86400);
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
 // Stripe webhook handler
 // ---------------------------------------------------------------------------
 
@@ -285,9 +308,10 @@ export default async function handler(req, res) {
         // Stripe's invoice.paid fires with invoice.subscription=null during checkout creation,
         // so we cannot reliably use invoice.paid for initial delivery.
         // session.subscription is always present here.
-        const sub = await stripe.subscriptions.retrieve(session.subscription);
+        const sub = await stripe.subscriptions.retrieve(session.subscription, { expand: ['items'] });
         const now2 = Math.floor(Date.now() / 1000);
-        const expiryTimestamp = sub.current_period_end;
+        const expiryTimestamp = getSubscriptionPeriodEnd(sub);
+        console.log(`[Webhook] Subscription period_end=${expiryTimestamp} (source: ${sub.current_period_end ? 'top-level' : sub.items?.data?.[0]?.current_period_end ? 'item-level' : 'computed'})`);
         const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now2) / 86400));
         const edition = tier;
 
@@ -448,8 +472,9 @@ export default async function handler(req, res) {
       });
 
       // Calculate Expiry (Fresh re-fetch to ensure period_end is accurate)
-      const subForExpiry = await stripe.subscriptions.retrieve(subscriptionId);
-      const expiryTimestamp = subForExpiry.current_period_end;
+      const subForExpiry = await stripe.subscriptions.retrieve(subscriptionId, { expand: ['items'] });
+      const expiryTimestamp = getSubscriptionPeriodEnd(subForExpiry);
+      console.log(`[Webhook] invoice.paid period_end=${expiryTimestamp} (source: ${subForExpiry.current_period_end ? 'top-level' : subForExpiry.items?.data?.[0]?.current_period_end ? 'item-level' : 'computed'})`);
       const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now) / 86400));
       const edition = tier;
 
