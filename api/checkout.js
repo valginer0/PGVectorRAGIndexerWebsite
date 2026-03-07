@@ -23,17 +23,28 @@ export default async function handler(req, res) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const isProduction = process.env.NODE_ENV === 'production' || (process.env.SITE_URL && process.env.SITE_URL.includes('ragvault.net'));
-    const PRICE_TEAM_YEARLY = isProduction ? 'price_1T3aT6Rc9V96VoFQxazszs8E' : null;
-    const PRICE_ORG_YEARLY = isProduction ? 'price_1T1iKDRc9V96VoFQupw5Wlaa' : null;
 
-    const { tier: tierInput, seats: seatsInput } = req.body || {};
+    // Legacy hardcoded annual price IDs (fallback only)
+    const LEGACY_TEAM_ANNUAL = isProduction ? 'price_1T3aT6Rc9V96VoFQxazszs8E' : null;
+    const LEGACY_ORG_ANNUAL = isProduction ? 'price_1T1iKDRc9V96VoFQupw5Wlaa' : null;
+
+    const { tier: tierInput, seats: seatsInput, billing: billingInput } = req.body || {};
 
     // Normalize tier: org -> organization
     const tier = (tierInput === 'org') ? 'organization' : tierInput;
 
+    // Normalize billing: default to annual for backward compat
+    const billing = (billingInput === 'perpetual') ? 'perpetual' : 'annual';
+
     const PRICE_MAP = {
-      team: process.env.STRIPE_PRICE_TEAM || PRICE_TEAM_YEARLY,
-      organization: process.env.STRIPE_PRICE_ORG || PRICE_ORG_YEARLY,
+      team: {
+        annual:    process.env.STRIPE_PRICE_TEAM_ANNUAL    || process.env.STRIPE_PRICE_TEAM || LEGACY_TEAM_ANNUAL,
+        perpetual: process.env.STRIPE_PRICE_TEAM_PERPETUAL || null,
+      },
+      organization: {
+        annual:    process.env.STRIPE_PRICE_ORG_ANNUAL     || process.env.STRIPE_PRICE_ORG  || LEGACY_ORG_ANNUAL,
+        perpetual: process.env.STRIPE_PRICE_ORG_PERPETUAL  || null,
+      },
     };
 
     if (!tier || !PRICE_MAP[tier]) {
@@ -46,7 +57,7 @@ export default async function handler(req, res) {
     let seats = parseInt(seatsInput || (tier === 'team' ? 5 : 25), 10);
     seats = Number.isSafeInteger(seats) ? Math.min(500, Math.max(1, seats)) : (tier === 'team' ? 5 : 25);
 
-    const priceId = PRICE_MAP[tier];
+    const priceId = PRICE_MAP[tier]?.[billing];
     if (!priceId) {
       return res.status(500).json({
         error: `Price ID not configured for tier: ${tier}. Contact hello@ragvault.net`,

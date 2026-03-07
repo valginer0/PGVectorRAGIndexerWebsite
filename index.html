@@ -765,6 +765,20 @@
         <p class="section-description">Free for individuals. Fair pricing for teams.</p>
       </div>
 
+      <!-- Billing toggle: Annual / One-time -->
+      <div class="billing-toggle-wrapper">
+        <div class="billing-toggle" id="billing-toggle" role="group" aria-label="Billing period">
+          <button class="billing-toggle-btn billing-toggle-btn--active" id="toggle-annual" data-billing="annual"
+            aria-pressed="true">
+            Annual
+            <span class="billing-save-badge">Best value</span>
+          </button>
+          <button class="billing-toggle-btn" id="toggle-perpetual" data-billing="perpetual" aria-pressed="false">
+            One-time
+          </button>
+        </div>
+      </div>
+
       <div class="pricing-grid">
         <!-- Community (Free) -->
         <div class="pricing-card">
@@ -797,8 +811,8 @@
             <h3 class="pricing-tier-name">Team</h3>
             <div class="pricing-price">
               <span class="pricing-currency">$</span>
-              <span class="pricing-amount">299</span>
-              <span class="pricing-period">/ year</span>
+              <span class="pricing-amount" data-annual="199" data-perpetual="349">199</span>
+              <span class="pricing-period" data-annual="/ year" data-perpetual="one-time">/ year</span>
             </div>
             <p class="pricing-tier-desc">For small teams sharing a single server</p>
           </div>
@@ -822,8 +836,8 @@
             <h3 class="pricing-tier-name">Organization</h3>
             <div class="pricing-price">
               <span class="pricing-currency">$</span>
-              <span class="pricing-amount">799</span>
-              <span class="pricing-period">/ year</span>
+              <span class="pricing-amount" data-annual="599" data-perpetual="999">599</span>
+              <span class="pricing-period" data-annual="/ year" data-perpetual="one-time">/ year</span>
             </div>
             <p class="pricing-tier-desc">For departments and larger teams</p>
           </div>
@@ -917,8 +931,9 @@
               <span class="faq-chevron">&#9656;</span>
               What happens if I don't renew?
             </summary>
-            <p class="faq-answer">The software continues to work. You keep the version you have. You lose access to
-              updates and priority support. Your data is never locked.</p>
+            <p class="faq-answer">Annual licenses: the software continues to work with the version you have, but you lose
+              access to updates and priority support. One-time (perpetual) licenses never expire. Your data is never
+              locked.</p>
           </details>
         </div>
       </div>
@@ -1275,6 +1290,48 @@
 
   <!-- Stripe Checkout -->
   <script>
+    // Billing state: "annual" | "perpetual"
+    let activeBilling = 'annual';
+
+    // ---- Toggle logic ----
+    (function setupBillingToggle() {
+      const toggle = document.getElementById('billing-toggle');
+      if (!toggle) return;
+
+      const dynamicAmounts = document.querySelectorAll('.pricing-amount[data-annual]');
+      const dynamicPeriods = document.querySelectorAll('.pricing-period[data-annual]');
+      const btnAnnual = document.getElementById('toggle-annual');
+      const btnPerpetual = document.getElementById('toggle-perpetual');
+
+      function applyBilling(billing) {
+        activeBilling = billing;
+
+        dynamicAmounts.forEach(el => {
+          el.style.opacity = '0';
+          setTimeout(() => {
+            el.textContent = el.dataset[billing];
+            el.style.opacity = '1';
+          }, 150);
+        });
+        dynamicPeriods.forEach(el => {
+          el.style.opacity = '0';
+          setTimeout(() => {
+            el.textContent = el.dataset[billing];
+            el.style.opacity = '1';
+          }, 150);
+        });
+
+        btnAnnual.classList.toggle('billing-toggle-btn--active', billing === 'annual');
+        btnPerpetual.classList.toggle('billing-toggle-btn--active', billing === 'perpetual');
+        btnAnnual.setAttribute('aria-pressed', String(billing === 'annual'));
+        btnPerpetual.setAttribute('aria-pressed', String(billing === 'perpetual'));
+      }
+
+      btnAnnual.addEventListener('click', () => applyBilling('annual'));
+      btnPerpetual.addEventListener('click', () => applyBilling('perpetual'));
+    })();
+
+    // ---- Checkout ----
     async function startCheckout(tier, event) {
       const btn = event.target.closest('button');
       const originalText = btn.innerHTML;
@@ -1285,7 +1342,7 @@
         const res = await fetch('/api/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tier }),
+          body: JSON.stringify({ tier, billing: activeBilling }),
         });
 
         const data = await res.json();

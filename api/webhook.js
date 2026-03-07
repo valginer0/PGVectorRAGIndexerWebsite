@@ -258,7 +258,7 @@ export default async function handler(req, res) {
 
       // Fulfill if it's a one-time payment
       if (session.mode === 'payment') {
-        const expiryDays = 90;
+        const expiryDays = 3650;
         const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
 
