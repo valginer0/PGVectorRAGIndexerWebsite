@@ -259,7 +259,7 @@ export default async function handler(req, res) {
       // Fulfill if it's a one-time payment
       if (session.mode === 'payment') {
         const expiryDays = 3650;
-        const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
+        const edition = tier;
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
 
         console.log(`[Webhook] License generated. Sending email to ${customerEmail}...`);
@@ -289,7 +289,7 @@ export default async function handler(req, res) {
         const now2 = Math.floor(Date.now() / 1000);
         const expiryTimestamp = sub.current_period_end;
         const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now2) / 86400));
-        const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
+        const edition = tier;
 
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
         console.log(`[Webhook] Subscription license generated (${expiryDays} days). Sending to ${customerEmail}...`);
@@ -451,7 +451,7 @@ export default async function handler(req, res) {
       const subForExpiry = await stripe.subscriptions.retrieve(subscriptionId);
       const expiryTimestamp = subForExpiry.current_period_end;
       const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now) / 86400));
-      const edition = (tier === 'org' || tier === 'organization') ? 'team' : tier;
+      const edition = tier;
 
       // License keys & Email
       const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, renewalCount);
