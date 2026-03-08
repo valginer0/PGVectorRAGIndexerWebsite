@@ -11,12 +11,12 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "vite": "^7.2.4",
-    "vitest": "^4.0.18"
+    "vite": "7.2.4",
+    "vitest": "4.0.18"
   },
   "dependencies": {
-    "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^8.0.1",
-    "stripe": "^20.3.1"
+    "jsonwebtoken": "9.0.3",
+    "nodemailer": "8.0.1",
+    "stripe": "20.3.1"
   }
 }
