@@ -2,6 +2,11 @@ import Stripe from 'stripe';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import {
+  normalizeTier, resolveTier, resolveSeats, validateDays,
+  getSubscriptionPeriodEnd, computeExpiryDays, checkIdempotency,
+  isTransientError,
+} from './lib/webhook-logic.js';
 
 // ---------------------------------------------------------------------------
 // License key generation (mirrors generate_license_key.py)
@@ -12,7 +17,7 @@ function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
   const now = Math.floor(Date.now() / 1000);
 
   // Guard for invalid 'days' causing NaN exp (results in exp: null in JSON)
-  const validDays = Number.isFinite(Number(days)) ? Number(days) : 90;
+  const validDays = validateDays(days);
   const expiry = Math.floor(now + (validDays * 86400));
 
   const payload = {
@@ -120,28 +125,8 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
   }
 }
 
-// ---------------------------------------------------------------------------
-// Stripe API compatibility helper
-// ---------------------------------------------------------------------------
-
-/**
- * Extract current_period_end from a Stripe subscription object.
- * Newer Stripe API versions (2024+) moved this field from the subscription
- * top-level to the subscription *item* level.
- */
-function getSubscriptionPeriodEnd(sub) {
-  // Try top-level first (legacy API versions)
-  if (sub.current_period_end) return sub.current_period_end;
-  // New API: field lives on the subscription item
-  const itemEnd = sub.items?.data?.[0]?.current_period_end;
-  if (itemEnd) return itemEnd;
-  // Last resort: compute from billing_cycle_anchor + plan interval
-  if (sub.billing_cycle_anchor && sub.plan?.interval === 'year') {
-    const years = sub.plan.interval_count || 1;
-    return sub.billing_cycle_anchor + (years * 365.25 * 86400);
-  }
-  return undefined;
-}
+// getSubscriptionPeriodEnd, normalizeTier, resolveSeats, etc.
+// are imported from ./lib/webhook-logic.js
 
 // ---------------------------------------------------------------------------
 // Stripe webhook handler
@@ -219,20 +204,18 @@ export default async function handler(req, res) {
       const processingId = customer?.metadata?.last_processing_session_id;
       const processingAt = parseInt(customer?.metadata?.last_processing_session_at || '0', 10);
       const now = Math.floor(Date.now() / 1000);
-      const diff = now - processingAt;
 
-      if (fulfilledId === session.id) {
+      const idempotencyAction = checkIdempotency(session.id, fulfilledId, processingId, processingAt, now);
+      if (idempotencyAction === 'skip_fulfilled') {
         console.log(`[Webhook] SKIP (fulfilled): session ${session.id} already delivered.`);
         return res.status(200).json({ received: true, info: 'Duplicate session' });
       }
-
-      if (processingId === session.id) {
-        if (diff < 300) {
-          console.log(`[Webhook] SKIP (recent processing): session ${session.id} is already in flight (${diff}s ago).`);
-          return res.status(200).json({ received: true, info: 'Concurrent session' });
-        } else {
-          console.warn(`[Webhook] Stale recovery detected for session ${session.id}: Process was interrupted ${diff}s ago. Proceeding.`);
-        }
+      if (idempotencyAction === 'skip_concurrent') {
+        console.log(`[Webhook] SKIP (recent processing): session ${session.id} is already in flight.`);
+        return res.status(200).json({ received: true, info: 'Concurrent session' });
+      }
+      if (idempotencyAction === 'stale_recovery') {
+        console.warn(`[Webhook] Stale recovery detected for session ${session.id}. Proceeding.`);
       }
 
       // Metadata Audit
@@ -240,12 +223,10 @@ export default async function handler(req, res) {
       console.log('[Metadata Audit] Customer:', customer ? JSON.stringify(customer.metadata || {}) : '(null)');
       console.log('[Metadata Audit] Subscription:', JSON.stringify(subscriptionMetadata));
 
-      const rawTier = session.metadata?.tier || customer?.metadata?.tier || subscriptionMetadata?.tier || 'team';
-      const tier = (rawTier === 'org') ? 'organization' : rawTier;
+      const tier = resolveTier(session.metadata, customer?.metadata, subscriptionMetadata);
 
       const seatsRaw = session.metadata?.seats || customer?.metadata?.seats || subscriptionMetadata?.seats;
-      const seatsParsed = parseInt(seatsRaw, 10);
-      const seats = Number.isSafeInteger(seatsParsed) ? Math.min(500, Math.max(1, seatsParsed)) : (tier === 'team' ? 5 : 25);
+      const seats = resolveSeats(seatsRaw, tier);
 
       const customerEmail = session.customer_details?.email || session.customer_email || customer?.email;
       const customerName = session.customer_details?.name || customer?.name || '';
@@ -312,7 +293,7 @@ export default async function handler(req, res) {
         const now2 = Math.floor(Date.now() / 1000);
         const expiryTimestamp = getSubscriptionPeriodEnd(sub);
         console.log(`[Webhook] Subscription period_end=${expiryTimestamp} (source: ${sub.current_period_end ? 'top-level' : sub.items?.data?.[0]?.current_period_end ? 'item-level' : 'computed'})`);
-        const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now2) / 86400));
+        const expiryDays = computeExpiryDays(expiryTimestamp, now2);
         const edition = tier;
 
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
@@ -347,13 +328,7 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('[Webhook] ERROR in session.completed handler:', err);
 
-      // Precision Retry: Stripe types + all Nodemailer/Network failures
-      const transientTypes = ['StripeRateLimitError', 'StripeAPIError', 'StripeConnectionError'];
-      const isStripeTransient = transientTypes.includes(err.type);
-      const isNodemailerTransient = !!(err.responseCode || err.command || err.response || err.code === 'ETIMEDOUT');
-      const isNetworkTransient = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err.code) || err.syscall === 'connect';
-
-      if (isStripeTransient || isNodemailerTransient || isNetworkTransient || err.message?.includes('SMTP')) {
+      if (isTransientError(err)) {
         return res.status(500).json({ error: 'Transient failure, retrying...' });
       }
 
@@ -411,20 +386,18 @@ export default async function handler(req, res) {
       const processingId = subscription?.metadata?.last_processing_invoice_id;
       const processingAt = parseInt(subscription?.metadata?.last_processing_invoice_at || '0', 10);
       const now = Math.floor(Date.now() / 1000);
-      const diff = now - processingAt;
 
-      if (fulfilledId === invoice.id) {
+      const idempotencyAction = checkIdempotency(invoice.id, fulfilledId, processingId, processingAt, now);
+      if (idempotencyAction === 'skip_fulfilled') {
         console.log(`[Webhook] SKIP (fulfilled): invoice ${invoice.id} already fulfilled.`);
         return res.status(200).json({ received: true, info: 'Duplicate invoice' });
       }
-
-      if (processingId === invoice.id) {
-        if (diff < 300) {
-          console.log(`[Webhook] SKIP (recent processing): invoice ${invoice.id} is already in flight (${diff}s ago).`);
-          return res.status(200).json({ received: true, info: 'Concurrent invoice' });
-        } else {
-          console.warn(`[Webhook] Stale recovery detected for invoice ${invoice.id}: Process was interrupted ${diff}s ago. Proceeding.`);
-        }
+      if (idempotencyAction === 'skip_concurrent') {
+        console.log(`[Webhook] SKIP (recent processing): invoice ${invoice.id} is already in flight.`);
+        return res.status(200).json({ received: true, info: 'Concurrent invoice' });
+      }
+      if (idempotencyAction === 'stale_recovery') {
+        console.warn(`[Webhook] Stale recovery detected for invoice ${invoice.id}. Proceeding.`);
       }
 
       // Metadata Audit for Invoices
@@ -433,12 +406,10 @@ export default async function handler(req, res) {
       console.log('[Metadata Audit] Customer:', customer ? JSON.stringify(customer.metadata || {}) : '(null)');
 
       // Metadata extraction
-      const rawTier = subscription.metadata?.tier || invoice.metadata?.tier || customer?.metadata?.tier || 'team';
-      const tier = (rawTier === 'org') ? 'organization' : rawTier;
+      const tier = resolveTier(subscription.metadata, invoice.metadata, customer?.metadata);
 
       const seatsRaw = subscription.metadata?.seats || invoice.metadata?.seats || customer?.metadata?.seats;
-      const seatsParsed = parseInt(seatsRaw, 10);
-      const seats = Number.isSafeInteger(seatsParsed) ? Math.min(500, Math.max(1, seatsParsed)) : (tier === 'team' ? 5 : 25);
+      const seats = resolveSeats(seatsRaw, tier);
 
       const renewalParsed = parseInt(subscription.metadata?.renewal_count || '0', 10);
       const renewalCount = Number.isSafeInteger(renewalParsed) ? renewalParsed : 0;
@@ -475,7 +446,7 @@ export default async function handler(req, res) {
       const subForExpiry = await stripe.subscriptions.retrieve(subscriptionId, { expand: ['items'] });
       const expiryTimestamp = getSubscriptionPeriodEnd(subForExpiry);
       console.log(`[Webhook] invoice.paid period_end=${expiryTimestamp} (source: ${subForExpiry.current_period_end ? 'top-level' : subForExpiry.items?.data?.[0]?.current_period_end ? 'item-level' : 'computed'})`);
-      const expiryDays = Math.max(1, Math.ceil((expiryTimestamp - now) / 86400));
+      const expiryDays = computeExpiryDays(expiryTimestamp, now);
       const edition = tier;
 
       // License keys & Email
@@ -504,13 +475,7 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('[Webhook] ERROR in invoice.paid fulfillment:', err);
 
-      // Precision Retry: Stripe types + all Nodemailer/Network failures
-      const transientTypes = ['StripeRateLimitError', 'StripeAPIError', 'StripeConnectionError'];
-      const isStripeTransient = transientTypes.includes(err.type);
-      const isNodemailerTransient = !!(err.responseCode || err.command || err.response || err.code === 'ETIMEDOUT');
-      const isNetworkTransient = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err.code) || err.syscall === 'connect';
-
-      if (isStripeTransient || isNodemailerTransient || isNetworkTransient || err.message?.includes('SMTP')) {
+      if (isTransientError(err)) {
         return res.status(500).json({ error: 'Transient failure, retrying...' });
       }
 
