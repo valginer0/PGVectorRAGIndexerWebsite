@@ -115,8 +115,9 @@
             Not a chatbot. Not a cloud service.
           </p>
           <p class="hero-clarification-text">
-            <strong>PGVectorRAG</strong> is a desktop application that runs entirely on your computer.
+            <strong>PGVectorRAG</strong> is a desktop application that runs entirely on your hardware.
             It helps you search and explore your own documents by meaning, even when you don't remember the exact words.
+            <strong>For teams</strong>, deploy on a shared server and connect desktop clients remotely — <a href="#teams" style="color: inherit; text-decoration: underline;">learn more</a>.
           </p>
           <p class="hero-clarification-example">
             For example, searching for "dog" can also surface documents about "puppy" — because meaning matters, not
@@ -725,28 +726,60 @@
     <div class="container">
       <div class="section-header">
         <h2 class="section-title">For Teams & Organizations</h2>
-        <p class="section-description">Deploy privately on an internal machine or server</p>
-        <p class="section-description" style="font-size: 0.9rem; opacity: 0.8;">
-          Free for personal use, education, research, and evaluation.
-          Ongoing internal, production, or CI/CD use within a company requires a commercial license.
+        <p class="section-description" style="font-size: 1.15rem; font-weight: 600;">
+          One server. Your whole team indexed.
+        </p>
+        <p class="section-description">
+          Deploy on a shared server and connect Windows, macOS, and Linux desktop clients remotely.
+          No Docker needed on client machines. Your data never leaves your network.
         </p>
       </div>
+
+      <!-- Architecture diagram -->
+      <div class="teams-diagram" style="text-align: center; margin: 2rem auto; max-width: 600px;">
+        <pre style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6; color: #a5b4fc; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 1.5rem; text-align: center; display: inline-block;">
+  ┌──────────┐   ┌──────────┐   ┌──────────┐
+  │ Desktop  │   │ Desktop  │   │ Desktop  │
+  │ Windows  │   │  macOS   │   │  Linux   │
+  └────┬─────┘   └────┬─────┘   └────┬─────┘
+       └──────────────┬──────────────┘
+                      │
+             ┌────────▼────────┐
+             │  Shared Server  │
+             │  Centralized    │
+             │  search, audit, │
+             │  admin controls │
+             └─────────────────┘</pre>
+      </div>
+
       <div class="teams-content">
         <ul class="teams-features-list">
           <li class="teams-feature-item">
-            <span class="teams-feature-check">✓</span> Keep sensitive documents off the cloud
+            <span class="teams-feature-check">✓</span> Centralized indexing, search, and admin controls
           </li>
           <li class="teams-feature-item">
-            <span class="teams-feature-check">✓</span> Optional API for integration
+            <span class="teams-feature-check">✓</span> Data stays on your server — never leaves your network
           </li>
           <li class="teams-feature-item">
-            <span class="teams-feature-check">✓</span> Commercial licensing available
+            <span class="teams-feature-check">✓</span> Users, roles, audit logs, and retention policies
+          </li>
+          <li class="teams-feature-item">
+            <span class="teams-feature-check">✓</span> IT manages one backend — team installs lightweight desktop clients
+          </li>
+          <li class="teams-feature-item">
+            <span class="teams-feature-check">✓</span> Set up your team in 15 minutes
           </li>
         </ul>
+
+        <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.8;">
+          Free for personal use, education, research, and evaluation.
+          Ongoing internal, production, or CI/CD use within a company requires a commercial license.
+        </p>
+
         <div class="teams-buttons">
-          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/DEPLOYMENT.md" target="_blank"
+          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/docs/DEPLOYMENT.md" target="_blank"
             rel="noopener noreferrer" class="btn btn-secondary">
-            <span>Team Deployment</span>
+            <span>Team Deployment Guide</span>
           </a>
           <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/LICENSE_COMMERCIAL.txt" target="_blank"
             rel="noopener noreferrer" class="btn btn-primary">
