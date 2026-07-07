@@ -16,7 +16,10 @@ const PRICE_ENV_OVERRIDES = {
   org_perpetual: 'STRIPE_PRICE_ORG_PERPETUAL',
 };
 
-// Module-scope cache so warm serverless invocations skip the prices.list call
+// Module-scope cache so warm serverless invocations skip the prices.list
+// call; entries expire after a TTL so a price rotation is picked up without
+// a redeploy
+const PRICE_CACHE_TTL_MS = 10 * 60 * 1000;
 const priceCache = {};
 
 /**
@@ -30,14 +33,15 @@ async function resolvePrice(stripe, lookupKey) {
   if (override) {
     return { id: override, price: null };
   }
-  if (priceCache[lookupKey]) {
-    return { id: priceCache[lookupKey].id, price: priceCache[lookupKey] };
+  const cached = priceCache[lookupKey];
+  if (cached && Date.now() - cached.fetchedAt < PRICE_CACHE_TTL_MS) {
+    return { id: cached.price.id, price: cached.price };
   }
   const { data } = await stripe.prices.list({ lookup_keys: [lookupKey], active: true });
   if (!data || data.length === 0) {
     return null;
   }
-  priceCache[lookupKey] = data[0];
+  priceCache[lookupKey] = { price: data[0], fetchedAt: Date.now() };
   return { id: data[0].id, price: data[0] };
 }
 
