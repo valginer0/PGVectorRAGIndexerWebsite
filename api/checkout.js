@@ -1,5 +1,46 @@
 import Stripe from 'stripe';
 
+// tier + billing period → Stripe lookup key (canonical keys set on the prices
+// in Stripe; survive price rotation because new prices inherit the lookup key)
+const LOOKUP_KEYS = {
+  team: { annual: 'team_annual', perpetual: 'team_perpetual' },
+  organization: { annual: 'org_annual', perpetual: 'org_perpetual' },
+};
+
+// STRIPE_PRICE_* env vars act as explicit overrides; lookup-key resolution is
+// the default mechanism when the override is unset
+const PRICE_ENV_OVERRIDES = {
+  team_annual: 'STRIPE_PRICE_TEAM_ANNUAL',
+  team_perpetual: 'STRIPE_PRICE_TEAM_PERPETUAL',
+  org_annual: 'STRIPE_PRICE_ORG_ANNUAL',
+  org_perpetual: 'STRIPE_PRICE_ORG_PERPETUAL',
+};
+
+// Module-scope cache so warm serverless invocations skip the prices.list call
+const priceCache = {};
+
+/**
+ * Resolve the Stripe price for a lookup key.
+ * Returns `{ id, price }` — `price` is the full Stripe price object when it
+ * came from prices.list, or null when an env override supplied only the ID.
+ * Returns null when no active price exists for the lookup key.
+ */
+async function resolvePrice(stripe, lookupKey) {
+  const override = process.env[PRICE_ENV_OVERRIDES[lookupKey]];
+  if (override) {
+    return { id: override, price: null };
+  }
+  if (priceCache[lookupKey]) {
+    return { id: priceCache[lookupKey].id, price: priceCache[lookupKey] };
+  }
+  const { data } = await stripe.prices.list({ lookup_keys: [lookupKey], active: true });
+  if (!data || data.length === 0) {
+    return null;
+  }
+  priceCache[lookupKey] = data[0];
+  return { id: data[0].id, price: data[0] };
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', process.env.SITE_URL || 'https://www.ragvault.net');
@@ -22,12 +63,6 @@ export default async function handler(req, res) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    const isProduction = process.env.NODE_ENV === 'production' || (process.env.SITE_URL && process.env.SITE_URL.includes('ragvault.net'));
-
-    // Legacy hardcoded annual price IDs (fallback only)
-    const LEGACY_TEAM_ANNUAL = isProduction ? 'price_1T3aT6Rc9V96VoFQxazszs8E' : null;
-    const LEGACY_ORG_ANNUAL = isProduction ? 'price_1T1iKDRc9V96VoFQupw5Wlaa' : null;
-
     const { tier: tierInput, seats: seatsInput, billing: billingInput } = req.body || {};
 
     // Normalize tier: org -> organization
@@ -36,20 +71,9 @@ export default async function handler(req, res) {
     // Normalize billing: default to annual for backward compat
     const billing = (billingInput === 'perpetual') ? 'perpetual' : 'annual';
 
-    const PRICE_MAP = {
-      team: {
-        annual:    process.env.STRIPE_PRICE_TEAM_ANNUAL    || process.env.STRIPE_PRICE_TEAM || LEGACY_TEAM_ANNUAL,
-        perpetual: process.env.STRIPE_PRICE_TEAM_PERPETUAL || null,
-      },
-      organization: {
-        annual:    process.env.STRIPE_PRICE_ORG_ANNUAL     || process.env.STRIPE_PRICE_ORG  || LEGACY_ORG_ANNUAL,
-        perpetual: process.env.STRIPE_PRICE_ORG_PERPETUAL  || null,
-      },
-    };
-
-    if (!tier || !PRICE_MAP[tier]) {
+    if (!tier || !LOOKUP_KEYS[tier]) {
       return res.status(400).json({
-        error: `Invalid tier. Must be one of: ${Object.keys(PRICE_MAP).join(', ')}`,
+        error: `Invalid tier. Must be one of: ${Object.keys(LOOKUP_KEYS).join(', ')}`,
       });
     }
 
@@ -57,16 +81,17 @@ export default async function handler(req, res) {
     let seats = parseInt(seatsInput || (tier === 'team' ? 5 : 25), 10);
     seats = Number.isSafeInteger(seats) ? Math.min(500, Math.max(1, seats)) : (tier === 'team' ? 5 : 25);
 
-    const priceId = PRICE_MAP[tier]?.[billing];
-    if (!priceId) {
+    const resolved = await resolvePrice(stripe, LOOKUP_KEYS[tier][billing]);
+    if (!resolved) {
       return res.status(500).json({
-        error: `Price ID not configured for tier: ${tier}. Contact hello@ragvault.net`,
+        error: `Price not configured for tier: ${tier}, billing: ${billing}. Contact hello@ragvault.net`,
       });
     }
+    const priceId = resolved.id;
 
-
-    // 4. Mode Detection: Auto-detect if price is recurring
-    const price = await stripe.prices.retrieve(priceId);
+    // Mode Detection: Auto-detect if price is recurring, reusing the price
+    // object from lookup-key resolution when available
+    const price = resolved.price || await stripe.prices.retrieve(priceId);
     const isRecurring = !!price.recurring;
     const checkoutMode = isRecurring ? 'subscription' : 'payment';
 
