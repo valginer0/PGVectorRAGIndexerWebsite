@@ -98,6 +98,10 @@ describe('index.html — metadata', () => {
   it('installer URL is a GitHub releases download link', () => {
     expect(index).toMatch(/releases\/download\/v[\d.]+\/PGVectorRAGIndexer\.msi/)
   })
+
+  it('newsletter signup (Kit) is removed', () => {
+    expect(index).not.toMatch(/kit\.com|convertkit|email-signup|newsletter/i)
+  })
 })
 
 // ── demo.html ─────────────────────────────────────────────────────────────────
