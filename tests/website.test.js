@@ -75,8 +75,9 @@ describe('index.html — features', () => {
 })
 
 describe('index.html — metadata', () => {
-  it('footer shows version 2.13.0', () => {
-    expect(index).toContain('Version 2.13.0')
+  it('footer version matches package.json', () => {
+    const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'))
+    expect(index).toContain(`Version ${pkg.version}`)
   })
 
   it('contact email is hello@ragvault.net', () => {
