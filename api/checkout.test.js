@@ -72,6 +72,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   delete process.env.STRIPE_SECRET_KEY;
   delete process.env.SITE_URL;
   for (const name of PRICE_ENV_VARS) delete process.env[name];
@@ -166,7 +167,9 @@ describe('checkout handler — lookup-key resolution', () => {
     expect(mockSessionsCreate).not.toHaveBeenCalled();
   });
 
-  it('caches lookup-key resolution across warm invocations', async () => {
+  it('caches lookup-key resolution across warm invocations within the TTL', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-06T12:00:00Z'));
     mockPricesList.mockResolvedValue({
       data: [{ id: 'price_cached', recurring: null }],
     });
@@ -174,6 +177,8 @@ describe('checkout handler — lookup-key resolution', () => {
 
     const res1 = fakeRes();
     await handler(fakeReq({ tier: 'team', billing: 'perpetual' }), res1);
+    // 9 minutes later — still inside the 10-minute TTL
+    vi.advanceTimersByTime(9 * 60 * 1000);
     const res2 = fakeRes();
     await handler(fakeReq({ tier: 'team', billing: 'perpetual' }), res2);
 
@@ -183,6 +188,36 @@ describe('checkout handler — lookup-key resolution', () => {
     expect(mockSessionsCreate).toHaveBeenCalledTimes(2);
     expect(mockSessionsCreate.mock.calls[1][0].line_items).toEqual([
       { price: 'price_cached', quantity: 1 },
+    ]);
+  });
+
+  it('re-resolves via prices.list once a cached entry is older than the TTL', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-06T12:00:00Z'));
+    mockPricesList.mockResolvedValueOnce({
+      data: [{ id: 'price_before_rotation', recurring: null }],
+    });
+    const handler = await freshHandler();
+
+    const res1 = fakeRes();
+    await handler(fakeReq({ tier: 'team', billing: 'perpetual' }), res1);
+
+    // 11 minutes later — past the 10-minute TTL; price was rotated meanwhile
+    vi.advanceTimersByTime(11 * 60 * 1000);
+    mockPricesList.mockResolvedValueOnce({
+      data: [{ id: 'price_after_rotation', recurring: null }],
+    });
+    const res2 = fakeRes();
+    await handler(fakeReq({ tier: 'team', billing: 'perpetual' }), res2);
+
+    expect(res1._status).toBe(200);
+    expect(res2._status).toBe(200);
+    expect(mockPricesList).toHaveBeenCalledTimes(2);
+    expect(mockSessionsCreate.mock.calls[0][0].line_items).toEqual([
+      { price: 'price_before_rotation', quantity: 1 },
+    ]);
+    expect(mockSessionsCreate.mock.calls[1][0].line_items).toEqual([
+      { price: 'price_after_rotation', quantity: 1 },
     ]);
   });
 });
