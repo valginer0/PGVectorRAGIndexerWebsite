@@ -6,12 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO -->
-  <title>PGVectorRAG — Live Demo</title>
-  <meta name="description" content="Try PGVectorRAG live — search sample documents by meaning. No install required.">
+  <title>PGVectorRAG — See It In Action</title>
+  <meta name="description" content="See PGVectorRAGIndexer semantic document search in action, then install it locally in under 2 minutes.">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="PGVectorRAG — Live Demo">
-  <meta property="og:description" content="Try semantic document search live. No install, no signup.">
+  <meta property="og:title" content="PGVectorRAG — See It In Action">
+  <meta property="og:description" content="Semantic document search, 100% local and self-hosted. See it in action.">
   <meta property="og:type" content="website">
 
   <!-- Favicon -->
@@ -222,8 +222,10 @@
     }
 
     .demo-feature-icon {
-      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
       margin-bottom: 0.5rem;
+      color: var(--color-accent-purple);
     }
 
     .demo-feature h3 {
@@ -317,6 +319,45 @@
       color: var(--color-text-secondary);
     }
 
+    /* ===== Video walkthrough ===== */
+    .demo-video {
+      margin: 2rem 0;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+    }
+
+    .demo-video video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: var(--color-bg-tertiary);
+    }
+
+    /* Placeholder shown until the real walkthrough video is recorded —
+       replace the .demo-video-placeholder block with a <video> tag once
+       recorded/produced against a real running backend. */
+    .demo-video-placeholder {
+      aspect-ratio: 16 / 9;
+      background: var(--color-bg-tertiary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      color: var(--color-text-tertiary);
+    }
+
+    .demo-video-placeholder svg {
+      width: 2.5rem;
+      height: 2.5rem;
+      opacity: 0.5;
+    }
+
+    .demo-video-placeholder span {
+      font-size: 0.9rem;
+    }
+
     /* ===== Hidden until ready ===== */
     .hidden {
       display: none !important;
@@ -349,79 +390,108 @@
   <div class="demo-container">
     <!-- Logo link back to main site -->
     <a href="/" class="demo-logo">
-      <span>🔍</span>
+      <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="7" cy="7" r="5" />
+        <path d="M11 11l3.5 3.5" stroke-linecap="round" />
+      </svg>
       <span>PGVectorRAG</span>
     </a>
 
     <!-- Status -->
     <div class="demo-status">
-      <h1 id="demo-title">Preparing Your Demo...</h1>
-      <p id="demo-subtitle">The demo server is waking up. While you wait, here's what you can do with PGVectorRAG:</p>
+      <h1>See It In Action</h1>
+      <p>PGVectorRAGIndexer is a 100% local, self-hosted document search engine. Here's what it looks like in
+        practice — no install required to watch.</p>
     </div>
 
-    <!-- Progress -->
-    <div class="progress-container">
-      <div class="progress-bar polling" id="progress-bar">
-        <div class="progress-fill" id="progress-fill"></div>
+    <!-- Video walkthrough -->
+    <div class="demo-video">
+      <!-- Placeholder until the real walkthrough is recorded against a running
+           backend. Replace this div with:
+           <video controls poster="/demo-poster.png" src="/demo-walkthrough.mp4"></video> -->
+      <div class="demo-video-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M10 8l6 4-6 4V8z" />
+        </svg>
+        <span>Walkthrough video coming soon</span>
       </div>
-      <p class="progress-text" id="progress-text">
-        <span class="status-dot waking" id="status-dot"></span>
-        <span id="status-label">Waking up demo server...</span>
-      </p>
     </div>
 
-    <!-- Feature cards (reading content) -->
+    <!-- Feature cards -->
     <div class="demo-features">
       <div class="demo-feature">
-        <div class="demo-feature-icon">📄</div>
+        <svg class="demo-feature-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3">
+          <path d="M4 1.5h5.5L12.5 4.5V14.5H4V1.5Z" stroke-linejoin="round" />
+          <path d="M9.5 1.5V4.5H12.5" stroke-linejoin="round" />
+        </svg>
         <h3>Multi-Format Search</h3>
         <p>Search across PDF, Word, Excel, PowerPoint, Markdown, HTML, and plain text — all in one place.</p>
       </div>
       <div class="demo-feature">
-        <div class="demo-feature-icon">🔍</div>
+        <svg class="demo-feature-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3">
+          <circle cx="6.5" cy="6.5" r="4.5" />
+          <path d="M13.5 13.5L10 10" stroke-linecap="round" />
+        </svg>
         <h3>Smart Search</h3>
         <p>Finds exact matches first. When there's no precise hit, it understands meaning — so "dog" also finds "puppy".
         </p>
       </div>
       <div class="demo-feature">
-        <div class="demo-feature-icon">🌳</div>
-        <h3>Document Tree</h3>
-        <p>Browse your indexed documents in a familiar folder structure. See what's indexed at a glance.</p>
+        <svg class="demo-feature-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3">
+          <path d="M2 2h4v4H2V2Z" stroke-linejoin="round" />
+          <path d="M4 6v4h5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M9 8h5v6H9V8Z" stroke-linejoin="round" />
+        </svg>
+        <h3>Document Tree &amp; Folder-Scoped Search</h3>
+        <p>Browse indexed documents in a familiar folder tree, then scope a search to just one folder — or exclude one
+          — right from the tree.</p>
       </div>
       <div class="demo-feature">
-        <div class="demo-feature-icon">🔒</div>
+        <svg class="demo-feature-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3">
+          <rect x="3" y="7" width="10" height="7" rx="1" />
+          <path d="M5 7V4.5a3 3 0 0 1 6 0V7" />
+        </svg>
         <h3>100% Private</h3>
         <p>Everything runs on your machine. No cloud uploads, no accounts, no tracking. Your data stays yours.</p>
       </div>
       <div class="demo-feature">
-        <div class="demo-feature-icon">🏢</div>
+        <svg class="demo-feature-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3">
+          <circle cx="5.5" cy="5" r="2" />
+          <circle cx="11" cy="5.5" r="1.6" />
+          <path d="M1.5 14v-1.2A3.3 3.3 0 0 1 5.5 9.5a3.3 3.3 0 0 1 4 3.3V14" stroke-linecap="round" />
+          <path d="M10 9.8a3 3 0 0 1 3.5 3v1.2" stroke-linecap="round" />
+        </svg>
         <h3>Built for Teams</h3>
         <p>Deploy on a shared server — Windows, macOS, and Linux clients connect remotely. RBAC, audit logs, SSO, and
           per-user document visibility included.</p>
       </div>
       <div class="demo-feature">
-        <div class="demo-feature-icon">🔑</div>
+        <svg class="demo-feature-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3">
+          <circle cx="5" cy="8" r="3" />
+          <path d="M7.8 8h6.7M11 8v2.5M13 8v1.8" stroke-linecap="round" />
+        </svg>
         <h3>License Stacking</h3>
         <p>Need 50+ users? Stack multiple Organization licenses on one server. The Admin Console shows total licensed
           seats and per-key status.</p>
       </div>
     </div>
 
-    <!-- Sample queries to try -->
+    <!-- Sample queries shown in the walkthrough -->
     <div class="demo-queries">
-      <h3>🔎 Try these searches once the demo loads:</h3>
+      <h3>Queries shown in the walkthrough:</h3>
       <span class="query-chip">"how to configure indexes"</span>
       <span class="query-chip">"error handling best practices"</span>
       <span class="query-chip">"deployment guide"</span>
       <span class="query-chip">"API authentication"</span>
-      <span class="query-chip">"database migration"</span>
+      <span class="query-chip">search only in /contracts</span>
       <span class="query-chip">"user permissions"</span>
     </div>
 
     <!-- CTA -->
     <div class="demo-cta">
-      <a href="#" class="btn-demo" id="demo-btn" disabled>
-        <span id="demo-btn-text">Waiting for server...</span>
+      <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/QUICK_START.md" class="btn-demo">
+        <span>Try It Yourself — Under 2 Minutes</span>
         <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 8h10M9 4l4 4-4 4" />
         </svg>
@@ -435,107 +505,6 @@
       </a>
     </div>
   </div>
-
-  <script>
-    // ===== Demo Warm-Up Logic =====
-    // Pings the demo server health endpoint until it responds,
-    // then enables the CTA button and optionally auto-redirects.
-
-    const DEMO_URL = 'https://demo-pgvectorrag.onrender.com';
-    const HEALTH_ENDPOINT = DEMO_URL + '/health';
-    const POLL_INTERVAL_MS = 3000;
-    const MAX_ATTEMPTS = 40; // ~2 minutes max wait
-    const AUTO_REDIRECT_DELAY_MS = 2000; // Wait 2s after ready before redirect
-
-    const titleEl = document.getElementById('demo-title');
-    const subtitleEl = document.getElementById('demo-subtitle');
-    const progressBar = document.getElementById('progress-bar');
-    const progressFill = document.getElementById('progress-fill');
-    const progressText = document.getElementById('progress-text');
-    const statusDot = document.getElementById('status-dot');
-    const statusLabel = document.getElementById('status-label');
-    const demoBtn = document.getElementById('demo-btn');
-    const demoBtnText = document.getElementById('demo-btn-text');
-
-    let attempts = 0;
-    let isReady = false;
-
-    async function pingDemo() {
-      attempts++;
-
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch(HEALTH_ENDPOINT, {
-          signal: controller.signal,
-          mode: 'cors',
-        });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          onDemoReady();
-          return;
-        }
-      } catch (err) {
-        // Expected during cold start — server not up yet
-      }
-
-      // Update progress
-      const progress = Math.min((attempts / MAX_ATTEMPTS) * 100, 95);
-      statusLabel.textContent = `Waking up demo server... (attempt ${attempts})`;
-
-      if (attempts >= MAX_ATTEMPTS) {
-        onDemoFailed();
-        return;
-      }
-
-      setTimeout(pingDemo, POLL_INTERVAL_MS);
-    }
-
-    function onDemoReady() {
-      isReady = true;
-
-      titleEl.textContent = 'Demo is Ready!';
-      subtitleEl.textContent = 'The demo server is up and running. Redirecting you now...';
-
-      progressBar.classList.remove('polling');
-      progressFill.style.width = '100%';
-
-      statusDot.className = 'status-dot ready';
-      statusLabel.textContent = 'Server is ready';
-
-      demoBtn.removeAttribute('disabled');
-      demoBtn.href = DEMO_URL;
-      demoBtnText.textContent = 'Open Demo';
-
-      // Auto-redirect after a short delay
-      setTimeout(() => {
-        if (isReady) {
-          window.location.href = DEMO_URL;
-        }
-      }, AUTO_REDIRECT_DELAY_MS);
-    }
-
-    function onDemoFailed() {
-      titleEl.textContent = 'Demo Unavailable';
-      subtitleEl.textContent = 'The demo server didn\'t respond in time. You can try again or install locally — it takes under 2 minutes.';
-
-      progressBar.classList.remove('polling');
-      progressFill.style.width = '100%';
-      progressFill.style.background = 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)';
-
-      statusDot.className = 'status-dot failed';
-      statusLabel.textContent = 'Server did not respond';
-
-      demoBtn.removeAttribute('disabled');
-      demoBtn.href = DEMO_URL;
-      demoBtnText.textContent = 'Try Anyway';
-    }
-
-    // Start pinging immediately
-    pingDemo();
-  </script>
 </body>
 
 </html>
