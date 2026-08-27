@@ -334,30 +334,6 @@
       background: var(--color-bg-tertiary);
     }
 
-    /* Placeholder shown until the real walkthrough video is recorded —
-       replace the .demo-video-placeholder block with a <video> tag once
-       recorded/produced against a real running backend. */
-    .demo-video-placeholder {
-      aspect-ratio: 16 / 9;
-      background: var(--color-bg-tertiary);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      color: var(--color-text-tertiary);
-    }
-
-    .demo-video-placeholder svg {
-      width: 2.5rem;
-      height: 2.5rem;
-      opacity: 0.5;
-    }
-
-    .demo-video-placeholder span {
-      font-size: 0.9rem;
-    }
-
     /* ===== Hidden until ready ===== */
     .hidden {
       display: none !important;
@@ -404,19 +380,22 @@
         practice — no install required to watch.</p>
     </div>
 
-    <!-- Video walkthrough -->
+    <!-- Video walkthrough — recorded against a real running instance seeded
+         with the synthetic tests/fixtures/search_eval corpus (no real user
+         data). WebM only: no libx264 encoder was available to also produce
+         an mp4 fallback. WebM covers Chrome/Firefox/Edge and Safari 14.1+
+         (macOS Big Sur+ / iOS 14.5+); older Safari won't play it. -->
     <div class="demo-video">
-      <!-- Placeholder until the real walkthrough is recorded against a running
-           backend. Replace this div with:
-           <video controls poster="/demo-poster.png" src="/demo-walkthrough.mp4"></video> -->
-      <div class="demo-video-placeholder">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M10 8l6 4-6 4V8z" />
-        </svg>
-        <span>Walkthrough video coming soon</span>
-      </div>
+      <video controls poster="/demo-poster.png" preload="metadata">
+        <source src="/demo-walkthrough.webm" type="video/webm">
+        Your browser doesn't support this video format —
+        <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/QUICK_START.md">install locally instead</a>,
+        it takes under 2 minutes.
+      </video>
     </div>
+    <p style="font-size:0.8rem;color:var(--color-text-tertiary);margin-top:-1.25rem;margin-bottom:1.5rem">
+      Shown against a small sample document set, not a shared live server.
+    </p>
 
     <!-- Feature cards -->
     <div class="demo-features">
@@ -477,15 +456,11 @@
       </div>
     </div>
 
-    <!-- Sample queries shown in the walkthrough -->
+    <!-- Queries actually run in the walkthrough above -->
     <div class="demo-queries">
-      <h3>Queries shown in the walkthrough:</h3>
-      <span class="query-chip">"how to configure indexes"</span>
-      <span class="query-chip">"error handling best practices"</span>
-      <span class="query-chip">"deployment guide"</span>
-      <span class="query-chip">"API authentication"</span>
-      <span class="query-chip">search only in /contracts</span>
-      <span class="query-chip">"user permissions"</span>
+      <h3>Queries shown in the video:</h3>
+      <span class="query-chip">"EV6"</span>
+      <span class="query-chip">"when should a user be asked to sign in again"</span>
     </div>
 
     <!-- CTA -->
