@@ -136,7 +136,11 @@ describe('demo.html — responsive layout', () => {
 })
 
 describe('demo.html — metadata', () => {
-  it('references demo backend URL', () => {
-    expect(demo).toContain('demo-pgvectorrag.onrender.com')
+  // The hosted demo (Render + Neon) was replaced by a recorded walkthrough.
+  // Assert that, so a future reviewer doesn't "fix" this by re-adding a
+  // cloud backend link to a page selling local-only search.
+  it('shows a recorded walkthrough, not a hosted backend', () => {
+    expect(demo).toContain('demo-walkthrough.webm')
+    expect(demo).not.toContain('onrender.com')
   })
 })
