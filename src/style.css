@@ -2072,11 +2072,11 @@ code {
 .windows-help-box {
   margin-top: 0.75rem;
   padding: 0.75rem;
-  background: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  background: rgba(0, 212, 170, 0.08);
+  border: 1px solid rgba(0, 212, 170, 0.25);
   border-radius: 8px;
   text-align: left;
-  max-width: 220px;
+  max-width: 260px;
 }
 
 .windows-help-title {
@@ -2084,6 +2084,30 @@ code {
   font-weight: 600;
   color: #ffc107;
   margin-bottom: 0.5rem;
+}
+
+.windows-help-box .windows-help-title:first-child {
+  color: var(--color-accent-green);
+}
+
+.windows-help-title + .windows-help-note {
+  margin-top: -0.25rem;
+}
+
+.windows-help-note {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+  margin-bottom: 0.6rem;
+}
+
+.windows-help-note strong {
+  color: var(--color-text-secondary);
+}
+
+.windows-help-steps + .windows-help-note {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
 }
 
 .windows-help-steps {

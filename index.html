@@ -176,11 +176,16 @@
                 </a>
                 <p class="download-note">Download & Run Installer</p>
                 <div class="windows-help-box">
-                  <p class="windows-help-title">⚠️ If Windows prevents running:</p>
+                  <p class="windows-help-title">Signed by PIVARO LLC &mdash; verify before installing</p>
+                  <p class="windows-help-note">Right-click the .msi &rarr; <strong>Properties</strong> &rarr;
+                    <strong>Digital Signatures</strong> to confirm the publisher.</p>
+                  <p class="windows-help-title">If Windows still blocks it:</p>
                   <ol class="windows-help-steps">
                     <li><strong>Browser:</strong> Click "..." → "Keep" → "Keep anyway"</li>
                     <li><strong>SmartScreen:</strong> Click "More Info" → "Run Anyway"</li>
                   </ol>
+                  <p class="windows-help-note">Microsoft SmartScreen warns on any installer it has not yet seen
+                    downloaded many times, signed or not. The warning reflects download volume, not the signature.</p>
                 </div>
               </div>
             </div>
@@ -702,8 +707,10 @@
             <span class="faq-chevron">▸</span>
             Does PGVectorRAGIndexer include installation or support services?
           </summary>
-          <p class="faq-answer">No. PGVectorRAGIndexer is designed as a self-service product. The focus is on clear
-            documentation and reliable local operation rather than ongoing services.</p>
+          <p class="faq-answer">The software is self-serve, with documentation written so a technical
+            administrator can install and run it unaided. Deployment and tuning engagements &mdash; installing on your
+            network, pointing ingestion at your document store, and tuning retrieval for your document types &mdash;
+            are available separately. Email <a href="mailto:hello@ragvault.net">hello@ragvault.net</a>.</p>
         </details>
         <details class="faq-item">
           <summary class="faq-question">
@@ -964,8 +971,12 @@
               <span class="faq-chevron">&#9656;</span>
               Does my data leave my network?
             </summary>
-            <p class="faq-answer">Never. All editions run entirely on your infrastructure. No cloud dependency, no
-              telemetry, no external calls. Your documents stay on your machines.</p>
+            <p class="faq-answer">Your documents, their embeddings and your search queries stay on your own
+              infrastructure. Nothing is sent to us: there is no cloud dependency, no account, and no background
+              call-home of any kind. Two things to know for accuracy. Setup needs internet once, to download the
+              container images and the embedding model &mdash; after that the system runs offline. And the desktop app
+              has optional usage analytics, switched off by default; when you switch it on, those events go to
+              <em>your own server</em>, not to us.</p>
           </details>
           <details class="faq-item">
             <summary class="faq-question">
