@@ -18,15 +18,41 @@ export function resolveTier(sessionMeta, customerMeta, subscriptionMeta) {
 }
 
 /**
- * Clamp seats to a safe integer in [1, 500].
- * Defaults: 5 for team, 25 for organization.
+ * Maximum seats each self-serve tier is entitled to.
+ *
+ * These are the numbers the pricing page sells and the only ones a paid
+ * checkout may mint. Larger deployments stack multiple Organization licences
+ * (see docs/LARGE_ORG_LICENSING.md) rather than inflating a single key.
+ */
+export const TIER_SEAT_LIMITS = Object.freeze({
+  team: 5,
+  organization: 25,
+});
+
+/**
+ * Seats a tier is entitled to. Unknown tiers get the most restrictive limit.
+ */
+export function maxSeatsForTier(tier) {
+  return TIER_SEAT_LIMITS[normalizeTier(tier)] ?? TIER_SEAT_LIMITS.team;
+}
+
+/**
+ * Resolve the seat count for a licence, capped by what the tier actually buys.
+ *
+ * The raw value originates in the browser and travels through Stripe metadata,
+ * so it is attacker-controlled at both ends. It previously was clamped only to
+ * [1, 500] with no reference to the tier, which meant a crafted
+ * `POST /api/checkout {tier:'team', seats:500}` paid the $299 Team price and
+ * minted a 500-seat licence. Cap against the tier, here and at the call site
+ * that builds the checkout session — never trust the round trip.
  */
 export function resolveSeats(seatsRaw, tier) {
+  const limit = maxSeatsForTier(tier);
   const parsed = parseInt(seatsRaw, 10);
   if (Number.isSafeInteger(parsed)) {
-    return Math.min(500, Math.max(1, parsed));
+    return Math.min(limit, Math.max(1, parsed));
   }
-  return tier === 'team' ? 5 : 25;
+  return limit;
 }
 
 /**

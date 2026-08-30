@@ -534,7 +534,11 @@ describe('webhook handler — error handling', () => {
 });
 
 describe('webhook handler — license key validation', () => {
-  it('generated license key is a valid JWT with correct claims', async () => {
+  // NOTE: this session asks for 10 seats on a Team purchase. That used to be
+  // honoured; it is now capped to the Team limit of 5. The end-to-end
+  // assertion below is what proves the cap survives the whole Stripe round
+  // trip, not just the unit under test.
+  it('generated license key is a valid JWT with correct claims, seats capped by tier', async () => {
     const event = makePaymentSession({ metadata: { tier: 'team', seats: '10' } });
     mockConstructEvent.mockReturnValue(event);
 
@@ -561,7 +565,8 @@ describe('webhook handler — license key validation', () => {
     const decoded = jwt.verify(token, TEST_PUBLIC_KEY, { algorithms: ['RS256'] });
 
     expect(decoded.edition).toBe('team');
-    expect(decoded.seats).toBe(10);
+    // 10 was requested, 5 is what a Team licence may carry.
+    expect(decoded.seats).toBe(5);
     expect(decoded.renewal_count).toBe(0);
     expect(decoded.jti).toBeTruthy();
 

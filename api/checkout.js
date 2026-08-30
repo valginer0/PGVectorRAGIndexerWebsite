@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { resolveSeats } from './lib/webhook-logic.js';
 
 // tier + billing period → Stripe lookup key (canonical keys set on the prices
 // in Stripe; survive price rotation because new prices inherit the lookup key)
@@ -81,9 +82,10 @@ export default async function handler(req, res) {
       });
     }
 
-    // Validation: Coerce seats to a positive integer and clamp (min 1, max 500)
-    let seats = parseInt(seatsInput || (tier === 'team' ? 5 : 25), 10);
-    seats = Number.isSafeInteger(seats) ? Math.min(500, Math.max(1, seats)) : (tier === 'team' ? 5 : 25);
+    // Seats are caller-supplied, so cap them at what this tier actually buys.
+    // The Stripe line item is a flat per-tier price with quantity 1, so an
+    // uncapped value here sells a 500-seat licence at the Team price.
+    const seats = resolveSeats(seatsInput, tier);
 
     const resolved = await resolvePrice(stripe, LOOKUP_KEYS[tier][billing]);
     if (!resolved) {
