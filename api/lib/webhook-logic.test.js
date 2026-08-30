@@ -3,6 +3,7 @@ import {
   normalizeTier,
   resolveTier,
   resolveSeats,
+  maxSeatsForTier,
   validateDays,
   getSubscriptionPeriodEnd,
   computeExpiryDays,
@@ -60,8 +61,9 @@ describe('resolveTier', () => {
 // resolveSeats
 // ---------------------------------------------------------------------------
 describe('resolveSeats', () => {
-  it('parses valid integer string', () => {
-    expect(resolveSeats('10', 'team')).toBe(10);
+  it('parses a valid integer string within the tier limit', () => {
+    expect(resolveSeats('3', 'team')).toBe(3);
+    expect(resolveSeats('10', 'organization')).toBe(10);
   });
 
   it('clamps to minimum 1', () => {
@@ -69,8 +71,28 @@ describe('resolveSeats', () => {
     expect(resolveSeats('-5', 'team')).toBe(1);
   });
 
-  it('clamps to maximum 500', () => {
-    expect(resolveSeats('999', 'team')).toBe(500);
+  // The bug this guards: seats were clamped to [1, 500] with no reference to
+  // the tier, so POST /api/checkout {tier:'team', seats:500} paid the $299
+  // Team price and minted a 500-seat licence. Seat enforcement could not
+  // catch it either, because the licence honestly claimed 500.
+  it('caps team at 5 seats no matter what is asked for', () => {
+    expect(resolveSeats('500', 'team')).toBe(5);
+    expect(resolveSeats('6', 'team')).toBe(5);
+    expect(resolveSeats(999999, 'team')).toBe(5);
+  });
+
+  it('caps organization at 25 seats no matter what is asked for', () => {
+    expect(resolveSeats('500', 'organization')).toBe(25);
+    expect(resolveSeats('26', 'organization')).toBe(25);
+  });
+
+  it('caps using the normalized tier, so the "org" shorthand is not a bypass', () => {
+    expect(resolveSeats('500', 'org')).toBe(25);
+  });
+
+  it('falls back to the most restrictive limit for an unknown tier', () => {
+    expect(resolveSeats('500', 'enterprise')).toBe(5);
+    expect(resolveSeats('500', undefined)).toBe(5);
   });
 
   it('defaults to 5 for team when invalid', () => {
@@ -85,7 +107,26 @@ describe('resolveSeats', () => {
   });
 
   it('handles numeric input (not just strings)', () => {
-    expect(resolveSeats(15, 'team')).toBe(15);
+    expect(resolveSeats(4, 'team')).toBe(4);
+    expect(resolveSeats(15, 'organization')).toBe(15);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// maxSeatsForTier
+// ---------------------------------------------------------------------------
+describe('maxSeatsForTier', () => {
+  it('matches the tiers sold on the pricing page', () => {
+    expect(maxSeatsForTier('team')).toBe(5);
+    expect(maxSeatsForTier('organization')).toBe(25);
+  });
+
+  it('normalizes the org shorthand', () => {
+    expect(maxSeatsForTier('org')).toBe(25);
+  });
+
+  it('is restrictive about tiers it does not recognize', () => {
+    expect(maxSeatsForTier('bogus')).toBe(5);
   });
 });
 
