@@ -91,6 +91,36 @@ describe('checkout handler — request validation', () => {
     expect(res._json.error).toMatch(/method not allowed/i);
   });
 
+  // checkout.js is what writes seats into Stripe metadata, so the cap needs
+  // pinning here and not only transitively through the webhook.
+  it('caps caller-supplied seats to the tier before they reach Stripe', async () => {
+    mockPricesList.mockResolvedValue({
+      data: [{ id: 'price_x', recurring: { interval: 'year' } }],
+    });
+    const handler = await freshHandler();
+    const res = fakeRes();
+    await handler(fakeReq({ tier: 'team', seats: 500 }), res);
+
+    expect(res._status).not.toBe(400);
+    const args = mockSessionsCreate.mock.calls[0][0];
+    expect(args.metadata.seats).toBe('5');
+    if (args.subscription_data) {
+      expect(args.subscription_data.metadata.seats).toBe('5');
+    }
+  });
+
+  it('leaves a seat count within the tier alone', async () => {
+    mockPricesList.mockResolvedValue({
+      data: [{ id: 'price_x', recurring: { interval: 'year' } }],
+    });
+    const handler = await freshHandler();
+    const res = fakeRes();
+    await handler(fakeReq({ tier: 'organization', seats: 10 }), res);
+
+    const args = mockSessionsCreate.mock.calls[0][0];
+    expect(args.metadata.seats).toBe('10');
+  });
+
   it('returns 400 for an unknown tier', async () => {
     const handler = await freshHandler();
     const res = fakeRes();

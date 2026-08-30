@@ -5,7 +5,12 @@
  * Normalize tier shorthand: 'org' → 'organization', everything else passthrough.
  */
 export function normalizeTier(rawTier) {
-  return rawTier === 'org' ? 'organization' : rawTier;
+  // Lowercased and trimmed because tiers also arrive as hand-entered Stripe
+  // metadata during manual Enterprise fulfilment, where 'Organization' is at
+  // least as likely as 'organization'. Case used to fall through to the
+  // default and silently under-provision.
+  const raw = typeof rawTier === 'string' ? rawTier.trim().toLowerCase() : rawTier;
+  return raw === 'org' ? 'organization' : raw;
 }
 
 /**
@@ -27,13 +32,20 @@ export function resolveTier(sessionMeta, customerMeta, subscriptionMeta) {
 export const TIER_SEAT_LIMITS = Object.freeze({
   team: 5,
   organization: 25,
+  // Enterprise is not self-serve: it is quoted, then fulfilled by hand by
+  // setting Stripe metadata. It still needs an entry here, because without one
+  // a 100-seat Enterprise deal silently minted a 5-seat licence — a valid,
+  // signed, wrong licence, which is worse than an error. 500 is the negotiated
+  // ceiling, matching the outer bound the code allowed before seats were
+  // capped by tier.
+  enterprise: 500,
 });
 
 /**
- * Seats a tier is entitled to. Unknown tiers get the most restrictive limit.
+ * Seats a tier is entitled to, or undefined if the tier is not recognized.
  */
 export function maxSeatsForTier(tier) {
-  return TIER_SEAT_LIMITS[normalizeTier(tier)] ?? TIER_SEAT_LIMITS.team;
+  return TIER_SEAT_LIMITS[normalizeTier(tier)];
 }
 
 /**
@@ -48,6 +60,17 @@ export function maxSeatsForTier(tier) {
  */
 export function resolveSeats(seatsRaw, tier) {
   const limit = maxSeatsForTier(tier);
+  if (limit === undefined) {
+    // Never guess an entitlement. Falling back to the smallest tier would
+    // email a correctly-signed licence carrying the wrong number, and the
+    // buyer would have no way to tell. Both webhook call sites run inside a
+    // try that logs a permanent failure and returns 200, so this surfaces the
+    // mistake without triggering endless Stripe retries.
+    throw new Error(
+      `Unknown tier "${tier}" — refusing to guess a seat entitlement. ` +
+      `Known tiers: ${Object.keys(TIER_SEAT_LIMITS).join(', ')}.`
+    );
+  }
   const parsed = parseInt(seatsRaw, 10);
   if (Number.isSafeInteger(parsed)) {
     return Math.min(limit, Math.max(1, parsed));
