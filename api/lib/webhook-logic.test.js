@@ -90,9 +90,25 @@ describe('resolveSeats', () => {
     expect(resolveSeats('500', 'org')).toBe(25);
   });
 
-  it('falls back to the most restrictive limit for an unknown tier', () => {
-    expect(resolveSeats('500', 'enterprise')).toBe(5);
-    expect(resolveSeats('500', undefined)).toBe(5);
+  // Enterprise is quoted and fulfilled by hand via Stripe metadata. An earlier
+  // version of this file asserted that a 500-seat Enterprise request resolved
+  // to 5 — a test written from the implementation rather than the requirement,
+  // which cemented a regression instead of catching it.
+  it('honours Enterprise up to the negotiated ceiling', () => {
+    expect(resolveSeats('100', 'enterprise')).toBe(100);
+    expect(resolveSeats('500', 'enterprise')).toBe(500);
+    expect(resolveSeats('501', 'enterprise')).toBe(500);
+  });
+
+  it('is case- and whitespace-insensitive, so hand-entered metadata still caps correctly', () => {
+    expect(resolveSeats('25', 'Organization')).toBe(25);
+    expect(resolveSeats('500', ' ORG ')).toBe(25);
+    expect(resolveSeats('500', 'TEAM')).toBe(5);
+  });
+
+  it('throws rather than guess when the tier is unrecognized', () => {
+    expect(() => resolveSeats('100', 'bogus')).toThrow(/unknown tier/i);
+    expect(() => resolveSeats('100', undefined)).toThrow(/unknown tier/i);
   });
 
   it('defaults to 5 for team when invalid', () => {
@@ -125,8 +141,12 @@ describe('maxSeatsForTier', () => {
     expect(maxSeatsForTier('org')).toBe(25);
   });
 
-  it('is restrictive about tiers it does not recognize', () => {
-    expect(maxSeatsForTier('bogus')).toBe(5);
+  it('covers Enterprise, which is fulfilled manually', () => {
+    expect(maxSeatsForTier('enterprise')).toBe(500);
+  });
+
+  it('returns undefined for tiers it does not recognize, so callers must decide', () => {
+    expect(maxSeatsForTier('bogus')).toBeUndefined();
   });
 });
 
