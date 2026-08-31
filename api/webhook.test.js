@@ -370,7 +370,55 @@ describe('webhook handler — checkout.session.completed (one-time payment)', ()
 
     expect(res._status).toBe(200);
     expect(res._json.warning).toBe('No email found');
-    expect(mockSendMail).not.toHaveBeenCalled();
+
+    // No licence goes to a customer — there is no address to send it to. But
+    // the money was taken, so an alert must reach the operator. Asserting
+    // "sendMail not called" would now hide exactly the case worth knowing about.
+    expect(mockSendMail).toHaveBeenCalledTimes(1);
+    const alert = mockSendMail.mock.calls[0][0];
+    expect(alert.to).toBe('test@example.com');
+    expect(alert.subject).toMatch(/fulfilment failed/i);
+    expect(alert.text).toMatch(/charged and has received nothing/i);
+  });
+
+  it('alerts the operator when fulfilment fails permanently', async () => {
+    const event = makePaymentSession({ metadata: { tier: 'team', seats: '5' } });
+    mockConstructEvent.mockReturnValue(event);
+
+    // A non-transient failure inside the handler: the licence email throws
+    // something isTransientError() will not classify as retryable.
+    mockSendMail.mockRejectedValueOnce(new Error('nope'));
+
+    const res = fakeRes();
+    await handler(fakeReq('{}'), res);
+
+    expect(res._status).toBe(200);
+    expect(res._json.error).toBe('Permanent failure');
+
+    // First call was the licence email that threw; the second is the alert.
+    const alert = mockSendMail.mock.calls[mockSendMail.mock.calls.length - 1][0];
+    expect(alert.to).toBe('test@example.com');
+    expect(alert.subject).toMatch(/checkout session/i);
+    expect(alert.text).toContain('cs_test_1');
+  });
+
+  it('never lets a failing alert mask the original failure', async () => {
+    const event = makePaymentSession({ metadata: { tier: 'team', seats: '5' } });
+    mockConstructEvent.mockReturnValue(event);
+
+    // Both the licence email and the alert email fail. Scoped with Once:
+    // vi.clearAllMocks() resets calls but not implementations, so a bare
+    // mockRejectedValue would leak into every test that follows.
+    mockSendMail
+      .mockRejectedValueOnce(new Error('smtp down'))
+      .mockRejectedValueOnce(new Error('smtp down'));
+
+    const res = fakeRes();
+    await handler(fakeReq('{}'), res);
+
+    // Still a clean, non-retrying 200 rather than an unhandled rejection.
+    expect(res._status).toBe(200);
+    expect(res._json.error).toBe('Permanent failure');
   });
 });
 
