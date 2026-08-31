@@ -900,13 +900,21 @@
           </div>
           <ul class="pricing-features">
             <li><span class="pricing-check">&#10003;</span> Everything in Team</li>
-            <li><span class="pricing-check">&#10003;</span> Up to 25 users</li>
+            <li><span class="pricing-check">&#10003;</span> 25 users per licence &mdash; stack for more</li>
             <li><span class="pricing-check">&#10003;</span> Multiple server instances</li>
             <li><span class="pricing-check">&#10003;</span> Path mapping / virtual roots</li>
             <li><span class="pricing-check">&#10003;</span> Advanced usage analytics</li>
             <li><span class="pricing-check">&#10003;</span> 30-minute onboarding call</li>
             <li><span class="pricing-check">&#10003;</span> Business-day email support</li>
           </ul>
+          <div class="seat-calc">
+            <label class="seat-calc-label" for="seat-count">How many users?</label>
+            <input class="seat-calc-input" id="seat-count" type="number" min="1" max="1000"
+                   step="1" value="60" inputmode="numeric" aria-describedby="seat-calc-result">
+            <p class="seat-calc-result" id="seat-calc-result" aria-live="polite"></p>
+            <p class="seat-calc-note">Buy once per licence, then load every key into your
+              server &mdash; it adds the seats together automatically.</p>
+          </div>
           <button onclick="startCheckout('organization', event)" class="btn btn-secondary pricing-btn">
             <span>Buy Organization License</span>
           </button>
@@ -924,7 +932,6 @@
           </div>
           <ul class="pricing-features">
             <li><span class="pricing-check">&#10003;</span> Everything in Organization</li>
-            <li><span class="pricing-check">&#10003;</span> Unlimited users</li>
             <li><span class="pricing-check">&#10003;</span> SSO / SAML (Okta and compatible IdPs)</li>
             <li><span class="pricing-check">&#10003;</span> RBAC with custom roles</li>
             <li><span class="pricing-check">&#10003;</span> Data retention policies</li>
@@ -1384,10 +1391,47 @@
         btnPerpetual.classList.toggle('billing-toggle-btn--active', billing === 'perpetual');
         btnAnnual.setAttribute('aria-pressed', String(billing === 'annual'));
         btnPerpetual.setAttribute('aria-pressed', String(billing === 'perpetual'));
+
+        if (typeof renderSeatCalc === 'function') renderSeatCalc();
       }
 
       btnAnnual.addEventListener('click', () => applyBilling('annual'));
       btnPerpetual.addEventListener('click', () => applyBilling('perpetual'));
+    })();
+
+    // ---- Seat calculator ----
+    // The pricing card's 25-user line reads as a ceiling, and the Enterprise
+    // card next to it used to say "Unlimited users", so a 60-user buyer
+    // concluded they had to negotiate. Stacking already serves them: this
+    // shows the arithmetic instead of leaving it in the FAQ.
+    const ORG_SEATS_PER_LICENCE = 25;
+    const ORG_PRICE = { annual: 799, perpetual: 1299 };
+
+    function renderSeatCalc() {
+      const input = document.getElementById('seat-count');
+      const out = document.getElementById('seat-calc-result');
+      if (!input || !out) return;
+
+      const users = parseInt(input.value, 10);
+      if (!Number.isSafeInteger(users) || users < 1) {
+        out.textContent = 'Enter a number of users.';
+        return;
+      }
+
+      const licences = Math.ceil(users / ORG_SEATS_PER_LICENCE);
+      const total = licences * ORG_PRICE[activeBilling];
+      const each = licences === 1 ? 'licence' : 'licences';
+      const period = activeBilling === 'annual' ? ' / year' : ' one-time';
+      out.innerHTML = `<strong>${licences} ${each}</strong> &middot; ` +
+        `$${total.toLocaleString('en-US')}${period}` +
+        `<span class="seat-calc-covers">covers ${(licences * ORG_SEATS_PER_LICENCE).toLocaleString('en-US')} users</span>`;
+    }
+
+    (function setupSeatCalc() {
+      const input = document.getElementById('seat-count');
+      if (!input) return;
+      input.addEventListener('input', renderSeatCalc);
+      renderSeatCalc();
     })();
 
     // ---- Checkout ----

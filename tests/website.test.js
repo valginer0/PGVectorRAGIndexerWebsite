@@ -52,6 +52,34 @@ describe('index.html — pricing', () => {
   })
 })
 
+describe('index.html — licence stacking is visible on the card', () => {
+  // The FAQ always explained stacking, but the pricing card said "Up to 25
+  // users" next to an Enterprise card offering "Unlimited users", so a
+  // 60-user buyer read a ceiling and went looking for a salesperson.
+  it('states the 25-user figure as per-licence, not as a ceiling', () => {
+    expect(index).toContain('25 users per licence')
+    expect(index).not.toContain('&#10003;</span> Up to 25 users')
+  })
+
+  it('does not sell "Unlimited users" as an Enterprise differentiator', () => {
+    // Stacking already delivers it to any Organization buyer. Asserted against
+    // the feature bullet specifically: a bare substring check also matches the
+    // source comment explaining why the bullet went, which would fail for the
+    // wrong reason.
+    expect(index).not.toContain('&#10003;</span> Unlimited users')
+  })
+
+  it('shows the arithmetic on the card', () => {
+    expect(index).toContain('id="seat-count"')
+    expect(index).toContain('ORG_SEATS_PER_LICENCE = 25')
+    expect(index).toContain("ORG_PRICE = { annual: 799, perpetual: 1299 }")
+  })
+
+  it('tells the buyer what to do with several keys', () => {
+    expect(index).toMatch(/load every key into your\s+server/i)
+  })
+})
+
 describe('index.html — features', () => {
   it('feature card says Smart Search, not Hybrid Search', () => {
     expect(index).toContain('Smart Search')
