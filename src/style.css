@@ -2224,3 +2224,63 @@ code {
     justify-content: center;
   }
 }
+
+/* Seat calculator (Organization card) --------------------------------------
+   Makes licence stacking visible on the card itself. The FAQ explained it,
+   but a buyer scanning the cards saw a 25-user ceiling next to an Enterprise
+   "contact us" and concluded they had to negotiate. */
+.seat-calc {
+  margin: 0 0 1rem;
+  padding: 0.85rem 0.9rem;
+  background: rgba(102, 126, 234, 0.08);
+  border: 1px solid rgba(102, 126, 234, 0.22);
+  border-radius: 10px;
+  text-align: left;
+}
+
+.seat-calc-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.seat-calc-input {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+}
+
+.seat-calc-input:focus-visible {
+  outline: 2px solid var(--color-accent-purple);
+  outline-offset: 1px;
+}
+
+.seat-calc-result {
+  margin: 0.55rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+}
+
+.seat-calc-result strong { color: var(--color-accent-cyan); }
+
+.seat-calc-covers {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--color-text-tertiary);
+  margin-top: 0.15rem;
+}
+
+.seat-calc-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--color-text-tertiary);
+}
