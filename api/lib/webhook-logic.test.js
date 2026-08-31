@@ -4,6 +4,7 @@ import {
   resolveTier,
   resolveSeats,
   maxSeatsForTier,
+  editionForTier,
   validateDays,
   getSubscriptionPeriodEnd,
   computeExpiryDays,
@@ -147,6 +148,33 @@ describe('maxSeatsForTier', () => {
 
   it('returns undefined for tiers it does not recognize, so callers must decide', () => {
     expect(maxSeatsForTier('bogus')).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// editionForTier
+// ---------------------------------------------------------------------------
+describe('editionForTier', () => {
+  it('passes through the editions the product recognizes', () => {
+    expect(editionForTier('team')).toBe('team');
+    expect(editionForTier('organization')).toBe('organization');
+    expect(editionForTier('org')).toBe('organization');
+  });
+
+  // license.py rejects any edition outside community/team/organization, so
+  // minting edition:'enterprise' emails the buyer a signed licence the server
+  // refuses to load. Enterprise is a price-list tier, not an edition — its
+  // features (SSO/SAML, RBAC, retention) are Organization-edition features.
+  it('maps the Enterprise tier onto the Organization edition', () => {
+    expect(editionForTier('enterprise')).toBe('organization');
+    expect(editionForTier('Enterprise')).toBe('organization');
+  });
+
+  it('never emits an edition the product would reject', () => {
+    const accepted = ['community', 'team', 'organization'];
+    for (const tier of ['team', 'organization', 'org', 'enterprise', 'ENTERPRISE']) {
+      expect(accepted).toContain(editionForTier(tier));
+    }
   });
 });
 
