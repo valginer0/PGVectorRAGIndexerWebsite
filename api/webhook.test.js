@@ -534,6 +534,33 @@ describe('webhook handler — error handling', () => {
 });
 
 describe('webhook handler — license key validation', () => {
+  // An Enterprise purchase produces a key carrying the Organization edition,
+  // because license.py accepts only community/team/organization. The email has
+  // to say that, or the buyer opens their key, sees a tier they did not buy,
+  // and files a ticket.
+  it('names the edition the key carries, not just the plan purchased', async () => {
+    const event = makePaymentSession({ metadata: { tier: 'enterprise', seats: '100' } });
+    mockConstructEvent.mockReturnValue(event);
+
+    let capturedHtml = '';
+    mockSendMail.mockImplementation((mail) => {
+      capturedHtml = mail.html;
+      return Promise.resolve({ messageId: 'test' });
+    });
+
+    await handler(fakeReq('{}'), fakeRes());
+
+    expect(capturedHtml).toContain('Organization');
+    expect(capturedHtml).toContain('(Enterprise plan)');
+
+    const match = capturedHtml.match(/color: #a5b4fc;">(eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)<\/code>/);
+    expect(match).toBeTruthy();
+    const { default: jwt } = await import('jsonwebtoken');
+    const decoded = jwt.verify(match[1], TEST_PUBLIC_KEY, { algorithms: ['RS256'] });
+    expect(decoded.edition).toBe('organization');
+    expect(decoded.seats).toBe(100);
+  });
+
   // NOTE: this session asks for 10 seats on a Team purchase. That used to be
   // honoured; it is now capped to the Team limit of 5. The end-to-end
   // assertion below is what proves the cap survives the whole Stripe round

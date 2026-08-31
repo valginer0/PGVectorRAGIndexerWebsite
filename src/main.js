@@ -301,6 +301,9 @@ if (toggleFeaturesBtn && hiddenFeatures) {
 }
 
 // ===== GitHub Stars Badge =====
+// Minimum star count worth advertising. The repo currently sits in single
+// digits, and "1 stars" on the homepage is worse than no badge at all.
+const STARS_BADGE_MIN = 25;
 async function fetchGitHubStars() {
   const starsElement = document.getElementById('github-stars');
   if (!starsElement) return;
@@ -318,7 +321,15 @@ async function fetchGitHubStars() {
     if (response.ok) {
       const data = await response.json();
       const stars = data.stargazers_count;
+
+      // A social-proof badge only works when the number is proof of something.
+      // Below the threshold it argues against the product, so stay hidden —
+      // the badge starts with display:none and is only revealed here.
+      if (!Number.isFinite(stars) || stars < STARS_BADGE_MIN) return;
+
       starsElement.textContent = stars >= 1000 ? `${(stars / 1000).toFixed(1)}k` : stars;
+      const label = starsElement.parentElement.querySelector('[data-stars-label]');
+      if (label) label.textContent = stars === 1 ? 'star' : 'stars';
       starsElement.parentElement.style.display = 'inline-flex';
     }
   } catch (err) {
