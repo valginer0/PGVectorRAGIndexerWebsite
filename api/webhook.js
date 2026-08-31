@@ -69,6 +69,48 @@ function createTransporter() {
   });
 }
 
+/**
+ * Tell a human that a paid checkout produced nothing.
+ *
+ * The permanent-failure branches below correctly return 200 so Stripe stops
+ * retrying — but that is also the terminal state for a purchase where the card
+ * was charged, no licence was minted and no email was sent. Until now the only
+ * artifact was a console.error in a serverless log nobody reads.
+ *
+ * Deliberately cannot throw: an alerting failure must never turn a handled
+ * failure into an unhandled one.
+ */
+async function sendFulfilmentAlert(reason, details = {}) {
+  const lines = Object.entries(details)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${k}: ${v}`)
+    .join('\n');
+
+  // Always log, even if the email cannot go out.
+  console.error(`[ALERT] Fulfilment failure — ${reason}\n${lines}`);
+
+  try {
+    const to = process.env.ALERT_EMAIL || process.env.SMTP_USER;
+    if (!to) {
+      console.error('[ALERT] No ALERT_EMAIL or SMTP_USER configured; alert not emailed.');
+      return;
+    }
+    await createTransporter().sendMail({
+      from: `"RagVault" <${process.env.SMTP_USER}>`,
+      to,
+      subject: `[RagVault] Fulfilment failed — ${reason}`,
+      text:
+        `A payment was processed but no licence was delivered.\n\n` +
+        `${lines}\n\n` +
+        `The customer has been charged and has received nothing. ` +
+        `Check the Stripe dashboard for the id above, then issue the licence by hand.\n`,
+    });
+    console.log('[ALERT] Fulfilment alert sent.');
+  } catch (e) {
+    console.error('[ALERT] Could not send fulfilment alert:', e && e.message);
+  }
+}
+
 async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition) {
   console.log(`[sendLicenseEmail] Preparing to send email to ${customerEmail} (Tier: ${tier})`);
   const transporter = createTransporter();
@@ -257,6 +299,11 @@ export default async function handler(req, res) {
             }
           });
         }
+        await sendFulfilmentAlert('no customer email on session', {
+          session: session.id,
+          customer: session.customer || '(none)',
+          tier: session.metadata?.tier || '(unset)',
+        });
         return res.status(200).json({ received: true, warning: 'No email found' });
       }
 
@@ -358,6 +405,15 @@ export default async function handler(req, res) {
           });
         }
       } catch (e) { console.error('Failed to clear processing marker:', e); }
+
+      await sendFulfilmentAlert('checkout session', {
+        session: session.id,
+        customer: session.customer || '(none)',
+        email: session.customer_details?.email || session.customer_email || '(unknown)',
+        tier: session.metadata?.tier || '(unset)',
+        seats: session.metadata?.seats || '(unset)',
+        error: err && err.message,
+      });
 
       return res.status(200).json({ received: true, error: 'Permanent failure' });
     }
@@ -505,6 +561,14 @@ export default async function handler(req, res) {
           });
         }
       } catch (e) { console.error('Failed to clear processing marker:', e); }
+
+      await sendFulfilmentAlert('subscription renewal', {
+        invoice: invoice.id,
+        subscription: subscriptionId || '(none)',
+        customer: invoice.customer || '(none)',
+        email: invoice.customer_email || '(unknown)',
+        error: err && err.message,
+      });
 
       return res.status(200).json({ received: true, error: 'Permanent failure' });
     }
