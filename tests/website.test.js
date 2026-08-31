@@ -104,6 +104,43 @@ describe('index.html — licence stacking is visible on the card', () => {
   })
 })
 
+describe('index.html — pricing cards match what the code enforces', () => {
+  // Audited 2026-08-30: the only edition-gated routers are identity_api
+  // (users/roles) and maintenance_api (audit log, retention). Everything else
+  // — scheduling, path mapping, visibility, monitoring, search, indexing — is
+  // ungated, and COMMERCIAL.md differentiates the tiers by seat count alone.
+  // These tests exist so the cards cannot drift back into claiming a product
+  // structure the code does not implement.
+
+  it('does not sell Team-level features as Enterprise exclusives', () => {
+    const enterprise = index.slice(index.indexOf('<!-- Enterprise -->'))
+    for (const claim of ['RBAC with custom roles', 'Data retention policies', 'Compliance exports']) {
+      expect(enterprise).not.toContain(claim)
+    }
+  })
+
+  it('sells Enterprise on procurement and services, not on features', () => {
+    const enterprise = index.slice(index.indexOf('<!-- Enterprise -->'))
+    expect(enterprise).toContain('Purchase orders and invoicing')
+    expect(enterprise).toContain('Master service agreement')
+    expect(enterprise).toContain('Deployment engagement')
+  })
+
+  it('does not claim ungated features as Organization-only', () => {
+    const org = index.slice(index.indexOf('<!-- Organization -->'), index.indexOf('<!-- Enterprise -->'))
+    // Path mapping and usage analytics carry no edition gate anywhere.
+    expect(org).not.toContain('Path mapping / virtual roots')
+    expect(org).not.toContain('Advanced usage analytics')
+  })
+
+  it('lists the genuinely gated capabilities on Team, where they are enforced', () => {
+    const team = index.slice(index.indexOf('<!-- Team -->'), index.indexOf('<!-- Organization -->'))
+    expect(team).toContain('Users, roles and permissions')
+    expect(team).toContain('Activity and audit log')
+    expect(team).toContain('Data retention policies')
+  })
+})
+
 describe('index.html — features', () => {
   it('feature card says Smart Search, not Hybrid Search', () => {
     expect(index).toContain('Smart Search')
