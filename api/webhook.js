@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import {
-  normalizeTier, resolveTier, resolveSeats, validateDays,
+  normalizeTier, resolveTier, resolveSeats, editionForTier, validateDays,
   getSubscriptionPeriodEnd, computeExpiryDays, checkIdempotency,
   isTransientError,
 } from './lib/webhook-logic.js';
@@ -263,7 +263,7 @@ export default async function handler(req, res) {
       // Fulfill if it's a one-time payment
       if (session.mode === 'payment') {
         const expiryDays = 3650;
-        const edition = tier;
+        const edition = editionForTier(tier);
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
 
         console.log(`[Webhook] License generated. Sending email to ${customerEmail}...`);
@@ -294,7 +294,7 @@ export default async function handler(req, res) {
         const expiryTimestamp = getSubscriptionPeriodEnd(sub);
         console.log(`[Webhook] Subscription period_end=${expiryTimestamp} (source: ${sub.current_period_end ? 'top-level' : sub.items?.data?.[0]?.current_period_end ? 'item-level' : 'computed'})`);
         const expiryDays = computeExpiryDays(expiryTimestamp, now2);
-        const edition = tier;
+        const edition = editionForTier(tier);
 
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
         console.log(`[Webhook] Subscription license generated (${expiryDays} days). Sending to ${customerEmail}...`);
@@ -447,7 +447,7 @@ export default async function handler(req, res) {
       const expiryTimestamp = getSubscriptionPeriodEnd(subForExpiry);
       console.log(`[Webhook] invoice.paid period_end=${expiryTimestamp} (source: ${subForExpiry.current_period_end ? 'top-level' : subForExpiry.items?.data?.[0]?.current_period_end ? 'item-level' : 'computed'})`);
       const expiryDays = computeExpiryDays(expiryTimestamp, now);
-      const edition = tier;
+      const edition = editionForTier(tier);
 
       // License keys & Email
       const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, renewalCount);

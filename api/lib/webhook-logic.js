@@ -42,6 +42,25 @@ export const TIER_SEAT_LIMITS = Object.freeze({
 });
 
 /**
+ * The `edition` claim to put in a licence for a given commercial tier.
+ *
+ * These are not the same vocabulary. The product recognizes exactly three
+ * editions — license.py rejects anything else outright with
+ * "Invalid edition in license key" — while the pricing page sells four tiers.
+ * Enterprise is a commercial tier, not an edition: everything it advertises
+ * (SSO/SAML, RBAC, retention policies) ships in the Organization edition.
+ *
+ * Minting `edition: 'enterprise'` therefore produces a correctly signed key
+ * that the server refuses to load, so the buyer gets an email containing a
+ * licence that cannot work.
+ */
+export function editionForTier(tier) {
+  const normalized = normalizeTier(tier);
+  if (normalized === 'enterprise') return 'organization';
+  return normalized;
+}
+
+/**
  * Seats a tier is entitled to, or undefined if the tier is not recognized.
  */
 export function maxSeatsForTier(tier) {
