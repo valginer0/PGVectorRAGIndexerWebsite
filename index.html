@@ -81,7 +81,7 @@
               d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z" />
           </svg>
           <span id="github-stars">—</span>
-          <span>stars</span>
+          <span data-stars-label>stars</span>
         </a>
         <h1 class="hero-title">
           <span class="hero-title-line1">Semantic Document Search</span><br>
@@ -893,7 +893,7 @@
             <h3 class="pricing-tier-name">Organization</h3>
             <div class="pricing-price">
               <span class="pricing-currency">$</span>
-              <span class="pricing-amount" data-annual="799" data-perpetual="1299">799</span>
+              <span class="pricing-amount" id="org-price" data-annual="799" data-perpetual="1299">799</span>
               <span class="pricing-period" data-annual="/ year" data-perpetual="one-time">/ year</span>
             </div>
             <p class="pricing-tier-desc">For departments and larger teams</p>
@@ -1008,12 +1008,13 @@
               <span class="faq-chevron">&#9656;</span>
               What if we have more than 25 users?
             </summary>
-            <p class="faq-answer">Purchase multiple Organization licenses — each covers 25 named users. Load all license
-              keys into your server to combine seat limits automatically. For example, 50 users = 2 &times; $799/yr = $1,598/yr.
-              No enterprise negotiations, no configuration changes required. The server adds the keys together and shows
-              the total licensed seats in the Admin Console Licenses panel. Need 100+ users?
-              <a href="mailto:hello@ragvault.net?subject=Large%20Deployment%20Inquiry">Contact us</a> for a custom
-              quote.</p>
+            <p class="faq-answer">Purchase multiple Organization licenses — each covers 25 named users — and load
+              every key into your server. It adds the seat limits together automatically: no negotiation, no
+              configuration changes, and the total appears in the Admin Console Licenses panel. The calculator on the
+              Organization plan above works out how many licences you need. This scales as far as you need it to,
+              including past 100 users; if you would rather have a conversation about a larger rollout,
+              <a href="mailto:hello@ragvault.net?subject=Large%20Deployment%20Inquiry">talk to us</a> about a
+              deployment engagement.</p>
           </details>
         </div>
       </div>
@@ -1405,7 +1406,17 @@
     // concluded they had to negotiate. Stacking already serves them: this
     // shows the arithmetic instead of leaving it in the FAQ.
     const ORG_SEATS_PER_LICENCE = 25;
-    const ORG_PRICE = { annual: 799, perpetual: 1299 };
+
+    // Read the price off the card rather than keeping a copy. The calculator
+    // emits something that reads like a quote, so a second hardcoded number
+    // could tell a buyer $2,397 while Stripe charges from a different price.
+    // Stripe lookup keys remain the actual source of truth for what is charged.
+    function orgPrice() {
+      const el = document.getElementById('org-price');
+      const raw = el && el.dataset[activeBilling];
+      const n = parseInt(raw, 10);
+      return Number.isSafeInteger(n) ? n : null;
+    }
 
     function renderSeatCalc() {
       const input = document.getElementById('seat-count');
@@ -1418,8 +1429,14 @@
         return;
       }
 
+      const price = orgPrice();
+      if (price === null) {
+        out.textContent = '';
+        return;
+      }
+
       const licences = Math.ceil(users / ORG_SEATS_PER_LICENCE);
-      const total = licences * ORG_PRICE[activeBilling];
+      const total = licences * price;
       const each = licences === 1 ? 'licence' : 'licences';
       const period = activeBilling === 'annual' ? ' / year' : ' one-time';
       out.innerHTML = `<strong>${licences} ${each}</strong> &middot; ` +

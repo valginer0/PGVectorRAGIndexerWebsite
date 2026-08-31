@@ -69,7 +69,7 @@ function createTransporter() {
   });
 }
 
-async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays) {
+async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition) {
   console.log(`[sendLicenseEmail] Preparing to send email to ${customerEmail} (Tier: ${tier})`);
   const transporter = createTransporter();
   const expiryDate = new Date(Date.now() + expiryDays * 86400 * 1000).toLocaleDateString('en-US', {
@@ -77,6 +77,18 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
   });
 
   const tierDisplay = tier.charAt(0).toUpperCase() + tier.slice(1);
+
+  // The purchased tier and the edition claim inside the key are not always the
+  // same word: Enterprise is a price-list tier and the key it produces carries
+  // the Organization edition, because that is the only edition the product
+  // recognizes. Say so, or a buyer inspecting their key sees a tier they did
+  // not buy and opens a support ticket.
+  const resolvedEdition = edition || tier;
+  const editionDiffers = resolvedEdition !== normalizeTier(tier);
+  const editionDisplay = resolvedEdition.charAt(0).toUpperCase() + resolvedEdition.slice(1);
+  const editionCell = editionDiffers
+    ? `${editionDisplay} <span style="color: #9ca3af; font-size: 12px;">(${tierDisplay} plan)</span>`
+    : editionDisplay;
 
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -93,7 +105,7 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
         </div>
 
         <table style="width: 100%; margin: 20px 0; color: #e2e8f0;">
-          <tr><td style="padding: 6px 0; color: #9ca3af;">Edition</td><td style="padding: 6px 0; text-align: right;">${tierDisplay}</td></tr>
+          <tr><td style="padding: 6px 0; color: #9ca3af;">Edition</td><td style="padding: 6px 0; text-align: right;">${editionCell}</td></tr>
           <tr><td style="padding: 6px 0; color: #9ca3af;">Licensed Seats</td><td style="padding: 6px 0; text-align: right;">${seats}</td></tr>
           <tr><td style="padding: 6px 0; color: #9ca3af;">Valid Until</td><td style="padding: 6px 0; text-align: right;">${expiryDate}</td></tr>
         </table>
@@ -267,7 +279,7 @@ export default async function handler(req, res) {
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
 
         console.log(`[Webhook] License generated. Sending email to ${customerEmail}...`);
-        await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+        await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition);
         console.log(`[Webhook] SUCCESS: Email sent to ${customerEmail}.`);
 
         // 3. Final Fulfillment Mark (Atomic & Data-Safe Merge)
@@ -298,7 +310,7 @@ export default async function handler(req, res) {
 
         const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
         console.log(`[Webhook] Subscription license generated (${expiryDays} days). Sending to ${customerEmail}...`);
-        await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+        await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition);
 
         if (session.customer) {
           const finalCustomerFetch = await stripe.customers.retrieve(session.customer);
@@ -451,7 +463,7 @@ export default async function handler(req, res) {
 
       // License keys & Email
       const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, renewalCount);
-      await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays);
+      await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition);
 
       // 3. Final atomic update: Marker + Renewal (Metadata Merge)
       const freshSubAfter = await stripe.subscriptions.retrieve(subscriptionId);

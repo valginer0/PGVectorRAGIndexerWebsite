@@ -47,8 +47,14 @@ describe('index.html — pricing', () => {
     expect(index).not.toContain('data-annual="599"')
   })
 
-  it('stacking FAQ references $799', () => {
-    expect(index).toContain('$799')
+  // Was: expect(index).toContain('$799'), which passed only because the
+  // stacking FAQ spelled the price out in prose. That prose was a duplicate of
+  // the card's own figure and has been removed, so the assertion now checks
+  // the single place the price is declared.
+  it('declares the Org price once, on the card', () => {
+    expect(index).toContain('id="org-price"')
+    expect(index).toContain('data-annual="799"')
+    expect((index.match(/data-annual="799"/g) || []).length).toBe(1)
   })
 })
 
@@ -72,7 +78,25 @@ describe('index.html — licence stacking is visible on the card', () => {
   it('shows the arithmetic on the card', () => {
     expect(index).toContain('id="seat-count"')
     expect(index).toContain('ORG_SEATS_PER_LICENCE = 25')
-    expect(index).toContain("ORG_PRICE = { annual: 799, perpetual: 1299 }")
+  })
+
+  // The calculator emits something that reads like a quote, so a second copy
+  // of the price could tell a buyer one number while Stripe charges another.
+  // It must read the figure off the card, not carry its own.
+  it('derives the price from the card instead of hardcoding a second copy', () => {
+    expect(index).toContain('id="org-price"')
+    expect(index).toMatch(/el\.dataset\[activeBilling\]/)
+    expect(index).not.toMatch(/ORG_PRICE\s*=\s*\{/)
+  })
+
+  it('does not restate the stacking arithmetic in prose that can drift', () => {
+    // The FAQ used to hardcode "50 users = 2 x $799/yr = $1,598/yr".
+    expect(index).not.toContain('$1,598')
+  })
+
+  it('no longer tells 100+ user buyers that they must contact sales', () => {
+    expect(index).not.toContain('Need 100+ users?')
+    expect(index).toMatch(/including past 100 users/i)
   })
 
   it('tells the buyer what to do with several keys', () => {
