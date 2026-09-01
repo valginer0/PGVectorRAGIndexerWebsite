@@ -146,8 +146,12 @@ describe('index.html — features', () => {
     expect(index).toContain('Smart Search')
   })
 
-  it('test count is 1,500+', () => {
-    expect(index).toMatch(/1[,.]?500\+/)
+  it('test count is 2,000+', () => {
+    expect(index).toMatch(/2[,.]?000\+/)
+  })
+
+  it('does not understate the suite with the old 1,500+ figure', () => {
+    expect(index).not.toMatch(/1[,.]?500\+/)
   })
 
   it('SSO description mentions Okta', () => {
@@ -160,6 +164,27 @@ describe('index.html — features', () => {
 
   it('teams section includes Admin Console with SCIM', () => {
     expect(index).toContain('SCIM')
+  })
+})
+
+// v2.17.0 turned API-key auth on by default, with loopback exempt. Every page
+// path that sells reaching the server from another machine has to say a key is
+// involved, or the first thing a visitor meets is an unexplained 401.
+describe('index.html — remote access needs an API key', () => {
+  it('teams section says remote clients authenticate with an API key', () => {
+    expect(index).toMatch(/Remote clients authenticate with an API key/)
+  })
+
+  it('the NAS / home-server use case mentions the key', () => {
+    expect(index).toMatch(/Devices other than the server itself connect with an API key/)
+  })
+
+  it('the localhost-vs-LAN note says LAN connections require a key', () => {
+    expect(index).toMatch(/connections from other machines require an API key/)
+  })
+
+  it('does not still claim LAN binding needs no setup beyond binding', () => {
+    expect(index).not.toMatch(/You can optionally bind to your LAN for home server or\s+team deployments\./)
   })
 })
 
