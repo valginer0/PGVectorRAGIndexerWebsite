@@ -322,7 +322,7 @@
         <div class="feature-card">
           <div class="feature-icon">🧪</div>
           <h3 class="feature-title">Thoroughly Tested</h3>
-          <p class="feature-description">1,500+ tests covering unit, integration, and end-to-end scenarios. Separate test
+          <p class="feature-description">2,000+ tests covering unit, integration, and end-to-end scenarios. Separate test
             database for safety.</p>
         </div>
 
@@ -401,7 +401,8 @@
           <div class="use-case-icon">🏠</div>
           <h3>Always-On Home Search</h3>
           <p>Install on your NAS (Synology, QNAP, TrueNAS) or a spare PC. Search from any device on your network —
-            always available, always private.</p>
+            always available, always private. Devices other than the server itself connect with an API key you
+            generate once during setup.</p>
         </div>
       </div>
     </div>
@@ -791,6 +792,10 @@
             <span class="teams-feature-check">✓</span> IT manages one backend — team installs lightweight desktop clients
           </li>
           <li class="teams-feature-item">
+            <span class="teams-feature-check">✓</span> Remote clients authenticate with an API key — generate one on the
+            server, paste it into each client
+          </li>
+          <li class="teams-feature-item">
             <span class="teams-feature-check">✓</span> Set up your team in 15 minutes
           </li>
         </ul>
@@ -1053,8 +1058,9 @@
             </div>
           </div>
           <p style="margin-bottom: 2rem; font-size: 0.9rem; opacity: 0.8;">
-            By default it binds to localhost (your machine only). You can optionally bind to your LAN for home server or
-            team deployments.
+            By default it binds to localhost (your machine only), where no key is needed. You can optionally bind to
+            your LAN for home server or team deployments — connections from other machines require an API key, which
+            takes one command on the server to create.
           </p>
           <div class="hero-buttons" style="justify-content: center; gap: 1rem; flex-wrap: wrap;">
             <div style="text-align: center;">
