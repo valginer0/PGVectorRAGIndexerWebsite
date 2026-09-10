@@ -380,15 +380,21 @@
         practice — no install required to watch.</p>
     </div>
 
-    <!-- Video walkthrough — re-recorded 2026-09-09 against v2.17.1, seeded with
-         demo_corpus/ from the main repo: a wholly fictional accountancy firm
-         (Ridgeway Partners). NO REAL DATA, and never re-record against any.
-         The previous recording was made against v2.16.0 and carried no version
-         label, which is why one is now displayed beneath the player — a
-         recording cannot silently break, but it does go stale.
-         WebM only: no libx264 encoder available for an mp4 fallback. WebM
-         covers Chrome/Firefox/Edge and Safari 14.1+ (macOS Big Sur+ /
-         iOS 14.5+); older Safari won't play it. -->
+    <!-- Video walkthrough — shows the DESKTOP APP, which is what the MSI
+         installs. Recorded 2026-09-09 against v2.17.1, seeded with demo_corpus/
+         from the main repo: a wholly fictional accountancy firm (Ridgeway
+         Partners). NO REAL DATA, and never re-record against any.
+         Two earlier versions were wrong in ways worth not repeating: the first
+         was recorded against v2.16.0 with no version label, and the second
+         showed the built-in WEB UI while this site sells a desktop app - a
+         visitor would have watched one application and installed a different-
+         looking one.
+         Captured headlessly with QT_QPA_PLATFORM=offscreen, replicating
+         main.py's Fusion style + dark palette + main.qss, so it matches what a
+         user sees. Frames grabbed to JPEG then encoded in one pass; per-frame
+         VP9 encoding could not keep up with the event loop.
+         WebM only: no libx264 for an mp4 fallback. Covers Chrome/Firefox/Edge
+         and Safari 14.1+; older Safari won't play it. -->
     <div class="demo-video">
       <video controls poster="/demo-poster.png" preload="metadata">
         <source src="/demo-walkthrough.webm" type="video/webm">
@@ -398,8 +404,9 @@
       </video>
     </div>
     <p style="font-size:0.8rem;color:var(--color-text-tertiary);margin-top:-1.25rem;margin-bottom:1.5rem">
-      Recorded against v2.17.1, September 2026, on a synthetic document set for a
-      fictional firm — not a shared live server, and not anyone's real files.
+      The desktop app on v2.17.1, recorded September 2026 against a synthetic
+      document set for a fictional firm — not a shared live server, and not
+      anyone's real files.
     </p>
 
     <!-- Feature cards -->
