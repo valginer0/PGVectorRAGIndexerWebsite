@@ -170,3 +170,51 @@ export function isTransientError(err) {
   if (err.message?.includes('SMTP')) return true;
   return false;
 }
+
+/**
+ * How many past `jti` values to keep in the issuance history.
+ *
+ * Stripe caps a metadata value at 500 characters. A UUID is 36, so with single
+ * space separators 13 would fit; 10 leaves room to spare and still covers more
+ * renewal cycles than any subscription has had.
+ */
+export const JTI_HISTORY_LIMIT = 10;
+
+/**
+ * The metadata that records a licence we just issued.
+ *
+ * This exists because nothing used to persist an issued key. The webhook minted
+ * a `jti`, signed it into the licence, emailed it, and dropped it — the one
+ * claim the client actually checks for revocation (`license.py:389` reads it as
+ * `key_id` and queries `?kid=<jti>`) was the one field never written down, and
+ * never even logged. So a leaked key could not be identified, let alone
+ * revoked: you could not tell whose it was or whether you had issued it.
+ *
+ * Recording is the half that cannot be retrofitted. A revocation endpoint can
+ * be built at any time and it will work on every key ever issued, because the
+ * handle is in the key itself. A key issued before recording exists has no
+ * handle anywhere we control, and nothing later can give it one. That asymmetry
+ * is why this lands before the first paid key ships rather than with the
+ * endpoint.
+ *
+ * Returns only fields to merge into an existing metadata object; the caller
+ * spreads the current metadata first so nothing is clobbered.
+ */
+export function issuanceRecord({ jti, edition, seats, exp, issuedAt, renewalCount = 0, priorHistory = '' }) {
+  if (!jti) return {};
+
+  const prior = String(priorHistory || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((id) => id !== jti);
+
+  return {
+    licence_jti: jti,
+    licence_edition: String(edition || ''),
+    licence_seats: String(seats ?? ''),
+    licence_issued_at: new Date(issuedAt * 1000).toISOString(),
+    licence_expires_at: new Date(exp * 1000).toISOString(),
+    licence_renewal_count: String(renewalCount),
+    licence_jti_history: [jti, ...prior].slice(0, JTI_HISTORY_LIMIT).join(' '),
+  };
+}

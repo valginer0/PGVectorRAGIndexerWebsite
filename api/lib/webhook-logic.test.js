@@ -10,6 +10,8 @@ import {
   computeExpiryDays,
   checkIdempotency,
   isTransientError,
+  issuanceRecord,
+  JTI_HISTORY_LIMIT,
 } from './webhook-logic.js';
 
 // ---------------------------------------------------------------------------
@@ -387,5 +389,59 @@ describe('isTransientError', () => {
     expect(isTransientError({ message: 'Invalid API key' })).toBe(false);
     expect(isTransientError({ type: 'StripeAuthenticationError' })).toBe(false);
     expect(isTransientError({})).toBe(false);
+  });
+});
+
+describe('issuanceRecord', () => {
+  const base = { jti: 'new-jti', edition: 'team', seats: 5, exp: 1800000000, issuedAt: 1700000000 };
+
+  it('stamps the handle, the terms and both dates', () => {
+    expect(issuanceRecord(base)).toEqual({
+      licence_jti: 'new-jti',
+      licence_edition: 'team',
+      licence_seats: '5',
+      licence_issued_at: '2023-11-14T22:13:20.000Z',
+      licence_expires_at: '2027-01-15T08:00:00.000Z',
+      licence_renewal_count: '0',
+      licence_jti_history: 'new-jti',
+    });
+  });
+
+  it('returns nothing when there is no jti, rather than writing an empty record', () => {
+    // An empty record would read as "we recorded this issuance" while holding
+    // no handle at all. Better to write nothing and leave the gap visible.
+    expect(issuanceRecord({ ...base, jti: '' })).toEqual({});
+    expect(issuanceRecord({ ...base, jti: undefined })).toEqual({});
+  });
+
+  it('puts the newest handle first and keeps the prior ones', () => {
+    const r = issuanceRecord({ ...base, priorHistory: 'a b c' });
+    expect(r.licence_jti_history).toBe('new-jti a b c');
+  });
+
+  it('caps the history so the value cannot exceed what Stripe metadata holds', () => {
+    const prior = Array.from({ length: 30 }, (_, i) => `jti-${i}`).join(' ');
+    const history = issuanceRecord({ ...base, priorHistory: prior }).licence_jti_history;
+    expect(history.split(' ')).toHaveLength(JTI_HISTORY_LIMIT);
+    expect(history.split(' ')[0]).toBe('new-jti');
+    // Stripe rejects a metadata value over 500 characters; a UUID is 36, so the
+    // cap has to hold even when every entry is full length.
+    const uuidish = Array.from({ length: 30 }, () => 'x'.repeat(36)).join(' ');
+    const worst = issuanceRecord({ ...base, jti: 'y'.repeat(36), priorHistory: uuidish }).licence_jti_history;
+    expect(worst.length).toBeLessThanOrEqual(500);
+  });
+
+  it('does not duplicate a handle that is already in the history', () => {
+    const r = issuanceRecord({ ...base, priorHistory: 'a new-jti b' });
+    expect(r.licence_jti_history).toBe('new-jti a b');
+  });
+
+  it('tolerates ragged whitespace in a hand-edited history', () => {
+    const r = issuanceRecord({ ...base, priorHistory: '  a   b \n c ' });
+    expect(r.licence_jti_history).toBe('new-jti a b c');
+  });
+
+  it('records the renewal count as a string', () => {
+    expect(issuanceRecord({ ...base, renewalCount: 3 }).licence_renewal_count).toBe('3');
   });
 });

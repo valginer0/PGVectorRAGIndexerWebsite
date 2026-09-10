@@ -4,6 +4,7 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import {
   normalizeTier, resolveTier, resolveSeats, editionForTier, validateDays,
+  issuanceRecord,
   getSubscriptionPeriodEnd, computeExpiryDays, checkIdempotency,
   isTransientError,
 } from './lib/webhook-logic.js';
@@ -30,7 +31,9 @@ function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
     renewal_count: renewalCount,
   };
 
-  console.log(`[generateLicenseKey] Payload: Edition=${payload.edition}, Org=${payload.org}, Seats=${payload.seats}, Expiry=${new Date(payload.exp * 1000).toISOString()}`);
+  // jti is logged because it is the revocation handle. Vercel's logs rotate,
+  // so this is triage help, not the record — the record goes to Stripe metadata.
+  console.log(`[generateLicenseKey] Payload: Edition=${payload.edition}, Org=${payload.org}, Seats=${payload.seats}, Expiry=${new Date(payload.exp * 1000).toISOString()}, jti=${payload.jti}`);
 
   // Resolve the private key from env var — supports two formats:
   //   1. Pure base64 body (no headers, no newlines) — most reliable in Vercel
@@ -50,7 +53,8 @@ function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
     const lines = b64.match(/.{1,64}/g) || [];
     privateKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
   }
-  return jwt.sign(payload, privateKey, { algorithm: 'RS256' });
+  // Returns the payload too: the caller needs `jti` to record what it issued.
+  return { token: jwt.sign(payload, privateKey, { algorithm: 'RS256' }), payload };
 }
 
 // ---------------------------------------------------------------------------
@@ -323,7 +327,7 @@ export default async function handler(req, res) {
       if (session.mode === 'payment') {
         const expiryDays = 3650;
         const edition = editionForTier(tier);
-        const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
+        const { token: licenseKey, payload: licencePayload } = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
 
         console.log(`[Webhook] License generated. Sending email to ${customerEmail}...`);
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition);
@@ -337,7 +341,16 @@ export default async function handler(req, res) {
               ...finalCustomerFetch.metadata,
               last_fulfilled_session_id: session.id,
               last_processing_session_id: '',
-              last_processing_session_at: ''
+              last_processing_session_at: '',
+              ...issuanceRecord({
+                jti: licencePayload.jti,
+                edition,
+                seats,
+                exp: licencePayload.exp,
+                issuedAt: licencePayload.iat,
+                renewalCount: licencePayload.renewal_count,
+                priorHistory: finalCustomerFetch.metadata?.licence_jti_history
+              })
             }
           });
         }
@@ -355,7 +368,7 @@ export default async function handler(req, res) {
         const expiryDays = computeExpiryDays(expiryTimestamp, now2);
         const edition = editionForTier(tier);
 
-        const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
+        const { token: licenseKey, payload: licencePayload } = generateLicenseKey(edition, orgName, seats, expiryDays, 0);
         console.log(`[Webhook] Subscription license generated (${expiryDays} days). Sending to ${customerEmail}...`);
         await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition);
 
@@ -366,7 +379,16 @@ export default async function handler(req, res) {
               ...finalCustomerFetch.metadata,
               last_fulfilled_session_id: session.id,
               last_processing_session_id: '',
-              last_processing_session_at: ''
+              last_processing_session_at: '',
+              ...issuanceRecord({
+                jti: licencePayload.jti,
+                edition,
+                seats,
+                exp: licencePayload.exp,
+                issuedAt: licencePayload.iat,
+                renewalCount: licencePayload.renewal_count,
+                priorHistory: finalCustomerFetch.metadata?.licence_jti_history
+              })
             }
           });
         }
@@ -518,7 +540,7 @@ export default async function handler(req, res) {
       const edition = editionForTier(tier);
 
       // License keys & Email
-      const licenseKey = generateLicenseKey(edition, orgName, seats, expiryDays, renewalCount);
+      const { token: licenseKey, payload: licencePayload } = generateLicenseKey(edition, orgName, seats, expiryDays, renewalCount);
       await sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition);
 
       // 3. Final atomic update: Marker + Renewal (Metadata Merge)
@@ -531,7 +553,18 @@ export default async function handler(req, res) {
         ...freshSubAfter.metadata,
         last_fulfilled_invoice_id: invoice.id,
         last_processing_invoice_id: '',
-        last_processing_invoice_at: ''
+        last_processing_invoice_at: '',
+        // Recorded on the subscription, not the customer: a renewal mints a new
+        // key each cycle, and the history belongs with the thing that renews.
+        ...issuanceRecord({
+          jti: licencePayload.jti,
+          edition,
+          seats,
+          exp: licencePayload.exp,
+          issuedAt: licencePayload.iat,
+          renewalCount: licencePayload.renewal_count,
+          priorHistory: freshSubAfter.metadata?.licence_jti_history
+        })
       };
       if (invoice.billing_reason === 'subscription_cycle') {
         updatedMetadata.renewal_count = String(freshRenewalCount + 1);

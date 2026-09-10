@@ -650,3 +650,88 @@ describe('webhook handler — license key validation', () => {
     expect(daysUntilExpiry).toBe(3650);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Issuance recording — the record must match the key that actually shipped
+// ---------------------------------------------------------------------------
+
+/** Pull the signed licence out of the email HTML and decode it. */
+async function decodeEmailedLicence(html) {
+  const match = html.match(/color: #a5b4fc;">(eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)<\/code>/);
+  expect(match).toBeTruthy();
+  const { default: jwt } = await import('jsonwebtoken');
+  return jwt.verify(match[1], TEST_PUBLIC_KEY, { algorithms: ['RS256'] });
+}
+
+/** The metadata from the final update call of a mock. */
+function lastMetadata(mock) {
+  expect(mock).toHaveBeenCalled();
+  return mock.mock.calls[mock.mock.calls.length - 1][1].metadata;
+}
+
+describe('webhook handler — issuance recording', () => {
+  it('records the jti of the one-time licence it actually emailed', async () => {
+    mockConstructEvent.mockReturnValue(makePaymentSession({ metadata: { tier: 'team', seats: '5' } }));
+    let html = '';
+    mockSendMail.mockImplementation((mail) => { html = mail.html; return Promise.resolve({ messageId: 't' }); });
+
+    await handler(fakeReq('{}'), fakeRes());
+
+    const decoded = await decodeEmailedLicence(html);
+    const metadata = lastMetadata(mockCustomersUpdate);
+
+    // The whole point: the recorded handle is the one inside the shipped key.
+    // A record that does not match the key is worse than no record, because it
+    // would be trusted.
+    expect(decoded.jti).toBeTruthy();
+    expect(metadata.licence_jti).toBe(decoded.jti);
+    expect(metadata.licence_jti_history).toBe(decoded.jti);
+    expect(metadata.licence_edition).toBe('team');
+    expect(metadata.licence_seats).toBe('5');
+    expect(metadata.licence_expires_at).toBe(new Date(decoded.exp * 1000).toISOString());
+
+    // The idempotency markers still work — recording is additive.
+    expect(metadata.last_fulfilled_session_id).toBe('cs_test_1');
+    expect(metadata.last_processing_session_id).toBe('');
+  });
+
+  it('records the jti for a subscription checkout too', async () => {
+    mockConstructEvent.mockReturnValue(makeSubscriptionSession());
+    let html = '';
+    mockSendMail.mockImplementation((mail) => { html = mail.html; return Promise.resolve({ messageId: 't' }); });
+
+    await handler(fakeReq('{}'), fakeRes());
+
+    const decoded = await decodeEmailedLicence(html);
+    expect(lastMetadata(mockCustomersUpdate).licence_jti).toBe(decoded.jti);
+  });
+
+  it('appends to the history on renewal, keeping the previous handles', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    mockSubscriptionsRetrieve.mockResolvedValue({
+      id: 'sub_test_1',
+      metadata: {
+        tier: 'team',
+        seats: '5',
+        renewal_count: '1',
+        licence_jti: 'older-jti',
+        licence_jti_history: 'older-jti oldest-jti',
+      },
+      items: { data: [{ current_period_end: now + 365 * 86400 }] },
+    });
+    mockConstructEvent.mockReturnValue(makeInvoicePaid());
+    let html = '';
+    mockSendMail.mockImplementation((mail) => { html = mail.html; return Promise.resolve({ messageId: 't' }); });
+
+    await handler(fakeReq('{}'), fakeRes());
+
+    const decoded = await decodeEmailedLicence(html);
+    const metadata = lastMetadata(mockSubscriptionsUpdate);
+
+    expect(metadata.licence_jti).toBe(decoded.jti);
+    // Newest first, prior handles preserved — a key leaked two cycles ago is
+    // still identifiable for as long as it has not expired.
+    expect(metadata.licence_jti_history).toBe(`${decoded.jti} older-jti oldest-jti`);
+    expect(metadata.last_fulfilled_invoice_id).toBe('in_test_1');
+  });
+});
