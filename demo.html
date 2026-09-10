@@ -475,15 +475,22 @@
       <span class="query-chip">"when should a user be asked to sign in again"</span>
     </div>
 
-    <!-- CTA -->
+    <!-- CTA — a visitor arriving cold from a link needs the download and the
+         price from here, not just a route back to the homepage.
+         These point at homepage anchors on purpose: scripts/update_version_docs.py
+         patches index.html only, so a version-pinned installer URL copied into
+         this file would silently go stale at the next release. -->
     <div class="demo-cta">
-      <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/QUICK_START.md" class="btn-demo">
-        <span>Try It Yourself — Under 2 Minutes</span>
+      <a href="/#quickstart" class="btn-demo">
+        <span>Download and Install — Under 2 Minutes</span>
         <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 8h10M9 4l4 4-4 4" />
         </svg>
       </a>
       <br>
+      <a href="/#pricing" class="btn-back" style="margin-right:1.25rem">
+        See pricing — free for personal use
+      </a>
       <a href="/" class="btn-back">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M13 8H3M7 4L3 8l4 4" />
