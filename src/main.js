@@ -219,7 +219,7 @@ screenshotDots.forEach(dot => {
 
 // Auto-rotate screenshots with pause functionality
 let currentScreenshot = 1;
-const totalScreenshots = 6;
+const totalScreenshots = 8;  // matches the 8 dots in index.html
 let carouselInterval = null;
 let carouselPaused = false;
 

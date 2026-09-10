@@ -657,16 +657,44 @@
           </div>
         </div>
 
-        <!-- Screenshot carousel REMOVED 2026-09-09.
-             The 2025-12 screenshots were captured against the author's real
-             document archive and published a personal email address, employment
-             history and the names of real third parties - on the page that sells
-             privacy. They were live from December 2025 until removal.
-             Replacements must be captured against demo_corpus/ in the main repo
-             (a wholly fictional firm), never against real data. See
-             docs/internal/DEMO_CAPTURE_SESSION.md.
-             Leaving the gap deliberately: a missing visual is trivially fixable,
-             the alternative was not. -->
+        <div class="desktop-visual">
+          <!-- Recaptured 2026-09-09 from v2.17.1 against demo_corpus/ in the main
+               repo - a wholly fictional firm. NEVER capture against real data:
+               the previous set exposed a personal email address, employment
+               history and third-party names, and was live from December 2025. -->
+          <div class="desktop-screenshots">
+              <img src="/DesktopSearch_2026-09.png" alt="Search tab: a plain-language query and ranked results, with the matched passage previewed"
+                class="screenshot active" id="screenshot-1" loading="lazy">
+              <img src="/DesktopDocuments_2026-09.png" alt="Documents tab: every indexed file, with chunk counts and one-click delete"
+                class="screenshot" id="screenshot-2" loading="lazy">
+              <img src="/DesktopHealth_2026-09.png" alt="Health tab: backend, database and search-index status at a glance"
+                class="screenshot" id="screenshot-3" loading="lazy">
+              <img src="/DesktopFolders_2026-09.png" alt="Folders tab: watched folders for scheduled re-indexing"
+                class="screenshot" id="screenshot-4" loading="lazy">
+              <img src="/DesktopOrganization_2026-09.png" alt="Organization tab: users, roles and permissions for team deployments"
+                class="screenshot" id="screenshot-5" loading="lazy">
+              <img src="/DesktopManage_2026-09.png" alt="Manage tab: database maintenance, export and backup"
+                class="screenshot" id="screenshot-6" loading="lazy">
+              <img src="/DesktopRecent_2026-09.png" alt="Recent tab: recently indexed and accessed documents"
+                class="screenshot" id="screenshot-7" loading="lazy">
+              <img src="/DesktopUpload_2026-09.png" alt="Upload tab: pick a folder or files, choose OCR mode, and index"
+                class="screenshot" id="screenshot-8" loading="lazy">
+            </div>
+            <div class="screenshot-dots">
+              <button class="dot active" data-screenshot="1" aria-label="View Search tab"></button>
+              <button class="dot" data-screenshot="2" aria-label="View Documents tab"></button>
+              <button class="dot" data-screenshot="3" aria-label="View Health tab"></button>
+              <button class="dot" data-screenshot="4" aria-label="View Folders tab"></button>
+              <button class="dot" data-screenshot="5" aria-label="View Organization tab"></button>
+              <button class="dot" data-screenshot="6" aria-label="View Manage tab"></button>
+              <button class="dot" data-screenshot="7" aria-label="View Recent tab"></button>
+              <button class="dot" data-screenshot="8" aria-label="View Upload tab"></button>
+            </div>
+            <p style="font-size:0.78rem;color:var(--color-text-tertiary);text-align:center;margin-top:0.75rem">
+              The desktop app on v2.17.1, shown against a synthetic document set for a fictional firm.
+            </p>
+          </div>
+        </div>
         </div>
       </div>
     </div>
