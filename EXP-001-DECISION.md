@@ -28,7 +28,7 @@ The receipt includes the stable revocation handle. No customer-wide metadata is 
 - Applies to new payment-mode sessions created by this checkout endpoint with fulfillment_version=one_time_v1.
 - Existing sessions and subscriptions retain their legacy paths. Known subscription replay defects are NOT fixed by this change.
 - The checkout endpoint currently allows cards only. Do not enable delayed payment methods without adding and testing async-payment fulfillment.
-- Concurrent sends and injected failures are tested with provider doubles. This is not proof of live SMTP behavior, provider delivery or real process-kill recovery.
+- Concurrent sends and injected exceptions are covered with provider doubles. Real SMTP delivery and deliberate receipt-loss replay were also verified as recorded below; a real process-kill recovery test was not performed.
 - Retry counts are not enforced atomically. No exact bound on duplicate notifications is claimed.
 - After Stripe's retries are exhausted, an owner must inspect and redeliver the original completed event. No new background reconciliation service is introduced.
 - The frozen invoice acceptance in PivaroFoundry PR #196 remains unchanged.
@@ -39,29 +39,32 @@ Tests exercise the real webhook and RS256 signer using a temporary key: paid cla
 
 Before EXP-001 launch:
 1. Review the local repair and approved offer copy; preserve existing customer terms.
-2. Confirm preview deployments do not expose production credentials before pushing a website branch.
-3. Run a Stripe test-mode checkout through the deployed test endpoint and verify the resulting license in the application.
+2. Use the explicitly approved, recipient-restricted preview test configuration; never treat it as a general isolation boundary for unreviewed code.
+3. Complete sandbox checkout and deployed fulfillment validation (done via an authenticated event relay; see evidence below).
 4. Release under owner control and verify the production commit. Source inspection alone does not identify Vercel's deployed revision.
 
 Rollback: revert the repair before accepting v1 purchases. Once v1 purchases exist, preserve their replay handler and signing key; reverting to legacy random issuance would violate their recovery contract.
 
-## Validation evidence
+## Validation evidence (November 17, 2026, America/Chicago)
 
-- Website base: 247760690dbdb503542202f63a18a758221edf35.
-- npm test -- --reporter=dot: 156 passed across 5 test files (147 existing, 9 new).
-- npm run build: passed.
-- Cross-language check: tests/validate_one_time_license.py passed using fetched application validator sources, not the older local desktop checkout.
-- App license.py Git blob: 2993befa15cbcf437f19097bca4cc80a9e7495e1.
-- App license_utils.py Git blob: 546598a4c4ffbbb5f79762dd71a3b2e989ed5c96.
-- Cross-language environment: Python virtual environment with PyJWT 2.10.1 and cryptography 46.0.3. A temporary RSA key was generated; no production signing key was used.
-- No paid model call, Stripe mutation, SMTP send, push, deployment, or production checkout was performed.
+- Tested code commit: f0026d09b476ccf19b088a3b5e5505bf5a90a8ec; website base: 247760690dbdb503542202f63a18a758221edf35.
+- npm test: 163 passed across 6 files; npm run build passed. GitHub content-checks and Vercel build passed.
+- Regression: a generated RSA key with inconsistent public/private components reproduced delivery of an unverifiable token before the fix. The signer now verifies its output before sending or recording completion.
+- App validator sources: license.py blob 2993befa15cbcf437f19097bca4cc80a9e7495e1; license_utils.py blob 546598a4c4ffbbb5f79762dd71a3b2e989ed5c96. Python environment: PyJWT 2.10.1, cryptography 46.0.3.
+- Actual browser checkout in Stripe Sandbox completed a $499 Team payment. Session: cs_test_b0mRVFnkDVYMG0U4Xmg4j8wFrLeKT4UygHeJh1MdfKA5mfCU2gu7utkvFt. Completed event: evt_1Ud0XJRc9V96VoFQeG8Nub4u. No real-money charge.
+- The actual Stripe event was fetched by API and signed locally for relay to the protected preview. This validates deployed fulfillment and real SMTP delivery, not automatic Stripe-to-preview webhook transport.
+- Final tested deployment: dpl_HLFamoUWdB1JgmXekPXnL24vWdpZ, Node 24.x, code f0026d0.
+- Real Zoho emails reached the approved owner mailbox. The initial preview key produced an invalid signature, including when locally signing and verifying with its own public key. A fresh test-only key is now scoped to this branch; production signing credentials were not modified.
+- For the same paid sandbox purchase, the test deliberately removed its completion marker, delivered the event, removed the marker again to simulate a missing post-send receipt, and delivered again. The two final emails contained byte-identical tokens. The actual application validator accepted the emailed token with the preview public key: Team, five seats, matching purchase ID, exactly 3,650 days; tampering was rejected.
+- A third delivery with the completion marker intact returned HTTP 200 / Duplicate session. This was controlled receipt-loss simulation, not a real process crash.
+- The test-mode endpoint we_1T1iYTRc9V96VoFQsMUbhDn5 targets production. It was paused only during the sandbox payment, then restored and verified enabled at its original URL. The existing live-mode endpoint was not changed.
+- All temporary one-hour preview access links created for testing were revoked.
 
-## Deployment inspection after team access was granted
+## Preview configuration and release limits
 
-- Vercel production deployment dpl_HdoP4R9T3uXp4roK9sACQAagkopm is READY, serves www.ragvault.net, and identifies Git commit 247760690dbdb503542202f63a18a758221edf35.
-- Vercel runtime is Node 24.x. Previous local verification used Node 22; deployment validation remains necessary.
-- Preview Stripe key is test-mode. Values were inspected without printing credentials.
-- Preview SMTP_PASSWORD matches production SMTP_PASSWORD. This is a concrete credential-isolation blocker for deploying the test branch.
-- Required owner decision: replace only the preview SMTP credential with a non-sending test configuration before deploying previews. Production credentials must remain unchanged.
-- Offer text now states the actual 3,650-day term and included updates instead of claiming perpetual use.
-- No branch push, production merge, deployment or real email send has occurred.
+- Branch-specific test prices now match the advertised offer: Team $499 (price_1Ud0V3Rc9V96VoFQ8vPo658U) and Organization $1,299 (price_1Ud0V4Rc9V96VoFQzbdeYYN4), with 3,650-day product descriptions. No live prices were changed.
+- Preview email requires a test-mode Stripe key and exactly PREVIEW_EMAIL_RECIPIENT=valginer0@gmail.com, with no CC/BCC. The owner explicitly authorized use of the existing Zoho credential for this controlled test. This code guard is not a general credential boundary against unreviewed code.
+- The preview checkout's existing SITE_URL points to production, so its success redirect also went there; this browser reported Site Unavailable. Stripe API independently confirmed paid status. A working customer-facing success redirect was not established by this test.
+- Production was last verified at deployment dpl_HdoP4R9T3uXp4roK9sACQAagkopm / commit 247760690dbdb503542202f63a18a758221edf35. No production merge or deployment was performed.
+- Before production release, verify live price descriptions/amounts, signing-key compatibility with the shipped app, and the customer success page. The preview public key is deliberately different from the shipped application's production key.
+- No paid model calls or new database/email provider were introduced.
