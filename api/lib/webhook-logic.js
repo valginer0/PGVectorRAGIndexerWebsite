@@ -246,3 +246,13 @@ export function oneTimePurchase(session) {
     },
   };
 }
+
+// Preview delivery is opt-in and restricted to exactly one owner address.
+export function assertPreviewEmail(message, env) {
+  if (env.VERCEL_ENV !== 'preview') return;
+  const allowed = env.PREVIEW_EMAIL_RECIPIENT;
+  if (!env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ||
+      typeof allowed !== 'string' || !allowed.includes('@') ||
+      message.to !== allowed || message.cc || message.bcc)
+    throw new Error('Preview email recipient or test-mode restriction failed');
+}

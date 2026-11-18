@@ -6,7 +6,7 @@ import {
   normalizeTier, resolveTier, resolveSeats, editionForTier, validateDays,
   issuanceRecord,
   getSubscriptionPeriodEnd, computeExpiryDays, checkIdempotency,
-  isTransientError, oneTimePurchase,
+  isTransientError, oneTimePurchase, assertPreviewEmail,
 } from './lib/webhook-logic.js';
 
 // ---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ function signLicensePayload(payload) {
 // ---------------------------------------------------------------------------
 
 function createTransporter() {
-  return nodemailer.createTransport({
+  const transport = nodemailer.createTransport({
     host: 'smtp.zoho.com',
     port: 465,
     secure: true,
@@ -75,6 +75,10 @@ function createTransporter() {
       pass: process.env.SMTP_PASSWORD,    // Zoho app-specific password
     },
   });
+  return { sendMail(message) {
+    assertPreviewEmail(message, process.env);
+    return transport.sendMail(message);
+  } };
 }
 
 /**
