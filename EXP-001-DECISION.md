@@ -68,3 +68,11 @@ Rollback: revert the repair before accepting v1 purchases. Once v1 purchases exi
 - Production was last verified at deployment dpl_HdoP4R9T3uXp4roK9sACQAagkopm / commit 247760690dbdb503542202f63a18a758221edf35. No production merge or deployment was performed.
 - Before production release, verify live price descriptions/amounts, signing-key compatibility with the shipped app, and the customer success page. The preview public key is deliberately different from the shipped application's production key.
 - No paid model calls or new database/email provider were introduced.
+
+## Production release checks (November 17, 2026)
+
+- Production RSA private-key mathematical validation passed. Its public key matches PUBLIC_KEY_DEFAULT in the actual shipped v2.17.2 license.py (Git blob 2993befa15cbcf437f19097bca4cc80a9e7495e1). No production key was changed and no production license was issued.
+- Production environment overrides select active live one-time USD prices: Team price_1Tq1olRc9V96VoFQMZItlOmj = $499; Organization price_1Tq1oxRc9V96VoFQ7iwcWjQk = $1,299. Products describe five and 25 users respectively; no conflicting one-year term appears in their customer-facing descriptions. Internal price nicknames retain the historical word Perpetual; lookup keys remain unchanged for compatibility.
+- Production SITE_URL is https://www.ragvault.net. GET /index.html from the owner's desktop returned HTTP 200 and included the purchase-success modal. Source displays it on DOMContentLoaded for #purchase-success. The cloud browser continued to show Site Unavailable, so visual verification on that browser remains unavailable; this is not evidence that the public site is down.
+- No live price, production environment variable, production deployment or live payment was changed during these checks.
+- The remaining owner decision is approval to merge website PR #1 and allow its normal production deployment. After release, verify the deployed commit and public offer. No real-money checkout is included in that approval request.
