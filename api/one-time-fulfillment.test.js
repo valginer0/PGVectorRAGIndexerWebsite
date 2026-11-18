@@ -85,6 +85,18 @@ describe('EXP-001 one-time fulfillment through the real handler and signer', () 
     expect(receipts.get('cs_purchase_a').licence_jti).toBe(claims.jti);
   });
 
+  it('rejects an inconsistent RSA key before sending or recording completion', async () => {
+    const jwk = crypto.createPrivateKey(keys.privateKey).export({ format: 'jwk' });
+    // Mismatch the public exponent and private components without a parse error.
+    jwk.e = 'Aw';
+    process.env.LICENSE_PRIVATE_KEY = crypto.createPrivateKey({
+      key: jwk, format: 'jwk',
+    }).export({ type: 'pkcs8', format: 'pem' });
+    expect((await deliver()).code).toBe(500);
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
   it('skips an old completed purchase even after a newer purchase', async () => {
     await deliver(); await deliver(event('cs_purchase_b')); await deliver();
     expect(mocks.send).toHaveBeenCalledTimes(2);

@@ -58,7 +58,15 @@ function signLicensePayload(payload) {
     privateKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
   }
   // Returns the payload too: the caller needs `jti` to record what it issued.
-  return { token: jwt.sign(payload, privateKey, { algorithm: 'RS256' }), payload };
+  const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
+  const [header, body, signature] = token.split('.');
+  // Some parsable RSA keys have inconsistent components. Never deliver a
+  // license the corresponding public key cannot verify, or mark it fulfilled.
+  if (!crypto.verify('RSA-SHA256', Buffer.from(header + '.' + body),
+    crypto.createPublicKey(privateKey), Buffer.from(signature, 'base64url'))) {
+    throw new Error('License signing key failed signature self-check');
+  }
+  return { token, payload };
 }
 
 // ---------------------------------------------------------------------------
