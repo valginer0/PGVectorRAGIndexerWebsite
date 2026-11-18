@@ -120,6 +120,12 @@ export default async function handler(req, res) {
       allow_promotion_codes: true,
     };
 
+    // Freeze the server-selected purchase terms into the completed event.
+    if (checkoutMode === 'payment') {
+      sessionOptions.metadata.fulfillment_version = 'one_time_v1';
+      sessionOptions.metadata.purchase_price_id = priceId;
+    }
+
     // Add subscription-specific data only if in subscription mode
     if (checkoutMode === 'subscription') {
       sessionOptions.subscription_data = {

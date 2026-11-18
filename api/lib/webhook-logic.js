@@ -218,3 +218,41 @@ export function issuanceRecord({ jti, edition, seats, exp, issuedAt, renewalCoun
     licence_jti_history: [jti, ...prior].slice(0, JTI_HISTORY_LIMIT).join(' '),
   };
 }
+
+// EXP-001 v1: claims come only from the signed completed Checkout snapshot.
+// Never substitute current customer, product, or subscription metadata.
+export function oneTimePurchase(session) {
+  if (session.mode !== 'payment' || session.metadata?.fulfillment_version !== 'one_time_v1')
+    throw new Error('Unsupported one-time fulfillment contract');
+  if (session.payment_status !== 'paid') return null;
+  const { tier, seats: rawSeats, purchase_price_id: priceId } = session.metadata;
+  const seats = Number(rawSeats);
+  if (!['team', 'organization'].includes(tier) ||
+      !Number.isSafeInteger(seats) || seats < 1 || seats > TIER_SEAT_LIMITS[tier] ||
+      typeof priceId !== 'string' || !priceId.startsWith('price_') ||
+      typeof session.id !== 'string' || !session.id.startsWith('cs_') ||
+      !Number.isSafeInteger(session.created) || session.created <= 0)
+    throw new Error('Invalid one-time purchase snapshot');
+  const email = session.customer_details?.email;
+  const name = session.customer_details?.name || '';
+  if (typeof email !== 'string' || !email.includes('@'))
+    throw new Error('Missing purchase email');
+  return {
+    tier, seats, priceId, email, name,
+    payload: {
+      edition: tier, org: name || email, seats,
+      iat: session.created, exp: session.created + 3650 * 86400,
+      jti: 'checkout:' + session.id, renewal_count: 0,
+    },
+  };
+}
+
+// Preview delivery is opt-in and restricted to exactly one owner address.
+export function assertPreviewEmail(message, env) {
+  if (env.VERCEL_ENV !== 'preview') return;
+  const allowed = env.PREVIEW_EMAIL_RECIPIENT;
+  if (!env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ||
+      typeof allowed !== 'string' || !allowed.includes('@') ||
+      message.to !== allowed || message.cc || message.bcc)
+    throw new Error('Preview email recipient or test-mode restriction failed');
+}
