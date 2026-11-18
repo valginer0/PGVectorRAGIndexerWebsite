@@ -38,6 +38,8 @@ describe('self-service checkout', () => {
     expect((await call({ ...valid, tier, seats: 900, amount: 1 })).code).toBe(200);
     const options = mock.create.mock.calls[0][0];
     expect(options.mode).toBe('payment');
+    expect(options.billing_address_collection).toBe('required');
+    expect(options.automatic_tax?.enabled).not.toBe(true);
     expect(options.line_items).toEqual([{ price: 'price_self_service', quantity: 1 }]);
     expect(options.metadata).toEqual({
       tier, seats: tier === 'team' ? '5' : '25', fulfillment_version: 'one_time_v1',

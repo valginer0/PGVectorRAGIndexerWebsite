@@ -14,8 +14,18 @@ future offer changes need a new version and must retain historical terms.
 
 ## Configuration and publication
 
-Implementation and isolated preview testing are approved. Production publication
-is a separate final review, as recorded in PivaroFoundry PR #207.
+Owner authorized production publication on November 18, 2026, conditional on restoring
+the original license's AS IS warranty disclaimer, consequential-damage liability exclusion,
+Florida governing law, and the quote/invoice contact line. Those changes are included.
+The original template had no monetary direct-liability cap; none has been invented.
+Owner also authorized one live Team purchase followed by a full refund, to verify automatic
+webhook delivery and the production-signed license.
+
+Tax decision, November 18, 2026: preserve current behavior; Stripe Tax and automatic tax
+collection remain OFF. Billing-address collection remains REQUIRED. Review tax collection
+if sales in any one state approach USD 100,000 or 200 transactions, or if non-business
+foreign buyers appear. These are owner-selected review triggers, not assertions of uniform
+legal thresholds. This release does not implement automated tax monitoring.
 
 1. Create dedicated LIVE products/prices, without changing historical products.
    Price metadata must include offer_family=self_service, offer_version=2026-11-18,
@@ -31,8 +41,8 @@ is a separate final review, as recorded in PivaroFoundry PR #207.
    checkout.session.async_payment_failed. Checkout uses Stripe's configured payment methods.
 4. Merge the reviewed commit and verify the Vercel production deployment, terms URL,
    both checkout prices/consent, and rejection of the legacy sales endpoint.
-   Creating unpaid checkout sessions is enough for a live smoke check; do not charge
-   a real card without explicit authorization.
+   The owner authorized one live USD 499 Team checkout and a full refund after
+   confirming automatic delivery and the production key. Use only an owner-provided payment method.
 5. Process refund requests manually in Stripe, for the full original payment.
    A refund does not remotely invalidate the offline key; terms require cessation of use.
 

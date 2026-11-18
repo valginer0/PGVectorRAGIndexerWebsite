@@ -270,3 +270,14 @@ describe('approved self-service offer', () => {
     expect(terms).toContain('cannot be disabled remotely')
   })
 })
+
+describe('restored commercial protections', () => {
+  it('preserves warranty disclaimer, liability exclusion, Florida law and refund promise', () => {
+    const terms = readFileSync(resolve(root, 'public/self-service-terms-2026-11-18.html'), 'utf-8')
+    for (const clause of ['Warranty disclaimer', '&quot;AS IS&quot;', 'MERCHANTABILITY',
+      'Limitation of liability', 'CONSEQUENTIAL DAMAGES', 'State of Florida',
+      'full-refund promise stated above', 'Quote/invoice requests: email'])
+      expect(terms).toContain(clause)
+    expect(index).toContain('Quote/invoice requests: email')
+  })
+})
