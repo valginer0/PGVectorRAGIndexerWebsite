@@ -157,3 +157,70 @@ describe('EXP-001 one-time fulfillment through the real handler and signer', () 
     expect(mocks.send).not.toHaveBeenCalled();
   });
 });
+
+describe('self-service fulfillment preserves the deterministic license contract', () => {
+  function purchase() {
+    const input = event();
+    Object.assign(input.data.object.metadata, {
+      offer_family: 'self_service', offer_version: '2026-11-18', terms_accepted: '2026-11-18',
+    });
+    input.data.object.consent = { terms_of_service: 'accepted' };
+    return input;
+  }
+  it('uses the same claims but sends the purchased support exclusions and refund terms', async () => {
+    await deliver();
+    const legacyToken = tokens()[0];
+    const legacyMail = mocks.send.mock.calls[0][0];
+    receipts.clear();
+    expect((await deliver(purchase())).code).toBe(200);
+    const mail = mocks.send.mock.calls[1][0];
+    expect(tokens()[1]).toBe(legacyToken);
+    expect(mail.subject).toContain('Team Self-Service');
+    expect(mail.html).toContain('no technical support');
+    expect(mail.html).toContain('within 14 days of payment');
+    expect(mail.html).toContain('self-service-terms-2026-11-18.html');
+    expect(mail.html).not.toContain('Need help?');
+    expect(legacyMail.html).toContain('Need help?');
+    expect(legacyMail.html).not.toContain('no technical support');
+  });
+  it.each(['missing-consent', 'old-version', 'missing-acceptance', 'wrong-seats'])
+    ('rejects %s before sending a license', async scenario => {
+      const input = purchase();
+      const session = input.data.object;
+      if (scenario === 'missing-consent') delete session.consent;
+      if (scenario === 'old-version') session.metadata.offer_version = 'old';
+      if (scenario === 'missing-acceptance') delete session.metadata.terms_accepted;
+      if (scenario === 'wrong-seats') session.metadata.seats = '1';
+      expect((await deliver(input)).code).toBe(500);
+      expect(mocks.send).not.toHaveBeenCalled();
+      expect(mocks.update).not.toHaveBeenCalled();
+    });
+  it('concurrent self-service deliveries carry identical tokens and offer terms', async () => {
+    expect((await Promise.all([deliver(purchase()), deliver(purchase())])).map(r => r.code)).toEqual([200, 200]);
+    expect(tokens()).toHaveLength(2);
+    expect(new Set(tokens()).size).toBe(1);
+    for (const [mail] of mocks.send.mock.calls) expect(mail.html).toContain('no technical support');
+  });
+  it('fulfills delayed payment once paid, not while unpaid or after a failed payment', async () => {
+    const input = purchase();
+    input.data.object.payment_status = 'unpaid';
+    expect((await deliver(input)).code).toBe(200);
+    expect(mocks.send).not.toHaveBeenCalled();
+    input.type = 'checkout.session.async_payment_failed';
+    expect((await deliver(input)).code).toBe(200);
+    expect(mocks.send).not.toHaveBeenCalled();
+    input.type = 'checkout.session.async_payment_succeeded';
+    input.data.object.payment_status = 'paid';
+    expect((await deliver(input)).code).toBe(200);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect((await deliver(input)).code).toBe(200);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+  it('a crash after sending does not extend self-service rights on retry', async () => {
+    mocks.update.mockRejectedValueOnce(new Error('receipt lost'));
+    expect((await deliver(purchase())).code).toBe(500);
+    expect((await deliver(purchase())).code).toBe(200);
+    expect(tokens()).toHaveLength(2);
+    expect(new Set(tokens()).size).toBe(1);
+  });
+});

@@ -23,19 +23,19 @@ const demo  = readFileSync(resolve(root, 'demo.html'),  'utf-8')
 // ── index.html ────────────────────────────────────────────────────────────────
 
 describe('index.html — pricing', () => {
-  it('Team annual price is $299', () => {
-    expect(index).toContain('data-annual="299"')
+  it('annual Team offers are absent', () => {
+    expect(index).not.toContain('data-annual="299"')
   })
 
-  it('Team perpetual price is $499', () => {
+  it('Team one-time price is $499', () => {
     expect(index).toContain('data-perpetual="499"')
   })
 
-  it('Org annual price is $799', () => {
-    expect(index).toContain('data-annual="799"')
+  it('annual Organization offers are absent', () => {
+    expect(index).not.toContain('data-annual="799"')
   })
 
-  it('Org perpetual price is $1299', () => {
+  it('Org one-time price is $1299', () => {
     expect(index).toContain('data-perpetual="1299"')
   })
 
@@ -53,8 +53,8 @@ describe('index.html — pricing', () => {
   // the single place the price is declared.
   it('declares the Org price once, on the card', () => {
     expect(index).toContain('id="org-price"')
-    expect(index).toContain('data-annual="799"')
-    expect((index.match(/data-annual="799"/g) || []).length).toBe(1)
+    expect(index).toContain('data-perpetual="1299"')
+    expect((index.match(/data-perpetual="1299"/g) || []).length).toBe(1)
   })
 })
 
@@ -112,22 +112,14 @@ describe('index.html — pricing cards match what the code enforces', () => {
   // These tests exist so the cards cannot drift back into claiming a product
   // structure the code does not implement.
 
-  it('does not sell Team-level features as Enterprise exclusives', () => {
-    const enterprise = index.slice(index.indexOf('<!-- Enterprise -->'))
-    for (const claim of ['RBAC with custom roles', 'Data retention policies', 'Compliance exports']) {
-      expect(enterprise).not.toContain(claim)
-    }
-  })
-
-  it('sells Enterprise on procurement and services, not on features', () => {
-    const enterprise = index.slice(index.indexOf('<!-- Enterprise -->'))
-    expect(enterprise).toContain('Purchase orders and invoicing')
-    expect(enterprise).toContain('Master service agreement')
-    expect(enterprise).toContain('Deployment engagement')
+  it('does not offer supported Enterprise sales', () => {
+    expect(index).not.toContain('Purchase orders and invoicing')
+    expect(index).not.toContain('Master service agreement')
+    expect(index).not.toContain('Deployment engagement')
   })
 
   it('does not claim ungated features as Organization-only', () => {
-    const org = index.slice(index.indexOf('<!-- Organization -->'), index.indexOf('<!-- Enterprise -->'))
+    const org = index.slice(index.indexOf('<!-- Organization -->'), index.indexOf('<!-- Pricing FAQ -->'))
     // Path mapping and usage analytics carry no edition gate anywhere.
     expect(org).not.toContain('Path mapping / virtual roots')
     expect(org).not.toContain('Advanced usage analytics')
@@ -256,5 +248,25 @@ describe('demo.html — metadata', () => {
   it('shows a recorded walkthrough, not a hosted backend', () => {
     expect(demo).toContain('demo-walkthrough.webm')
     expect(demo).not.toContain('onrender.com')
+  })
+})
+
+describe('approved self-service offer', () => {
+  it('states the term, update rights, exclusions, refund and preserved customer terms', () => {
+    for (const text of ['Team Self-Service', 'Organization Self-Service', '3,650-day',
+      'including major versions', 'no technical support', 'within 14 days of payment',
+      'Existing customers keep their original purchase terms'])
+      expect(index).toContain(text)
+    expect(index).not.toContain('30-minute onboarding')
+    expect(index).not.toContain('Business-day email support')
+    expect(index).not.toContain('id="billing-toggle"')
+  })
+  it('links explicit acceptance to versioned terms and the separate checkout', () => {
+    expect(index).toContain('id="self-service-terms"')
+    expect(index).toContain('/api/self-service-checkout')
+    expect(index).toContain('/self-service-terms-2026-11-18.html')
+    const terms = readFileSync(resolve(root, 'public/self-service-terms-2026-11-18.html'), 'utf-8')
+    expect(terms).toContain('2026-11-18')
+    expect(terms).toContain('cannot be disabled remotely')
   })
 })
