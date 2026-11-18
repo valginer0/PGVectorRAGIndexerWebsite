@@ -55,3 +55,13 @@ Rollback: revert the repair before accepting v1 purchases. Once v1 purchases exi
 - App license_utils.py Git blob: 546598a4c4ffbbb5f79762dd71a3b2e989ed5c96.
 - Cross-language environment: Python virtual environment with PyJWT 2.10.1 and cryptography 46.0.3. A temporary RSA key was generated; no production signing key was used.
 - No paid model call, Stripe mutation, SMTP send, push, deployment, or production checkout was performed.
+
+## Deployment inspection after team access was granted
+
+- Vercel production deployment dpl_HdoP4R9T3uXp4roK9sACQAagkopm is READY, serves www.ragvault.net, and identifies Git commit 247760690dbdb503542202f63a18a758221edf35.
+- Vercel runtime is Node 24.x. Previous local verification used Node 22; deployment validation remains necessary.
+- Preview Stripe key is test-mode. Values were inspected without printing credentials.
+- Preview SMTP_PASSWORD matches production SMTP_PASSWORD. This is a concrete credential-isolation blocker for deploying the test branch.
+- Required owner decision: replace only the preview SMTP credential with a non-sending test configuration before deploying previews. Production credentials must remain unchanged.
+- Offer text now states the actual 3,650-day term and included updates instead of claiming perpetual use.
+- No branch push, production merge, deployment or real email send has occurred.
