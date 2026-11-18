@@ -6,7 +6,7 @@ import {
   normalizeTier, resolveTier, resolveSeats, editionForTier, validateDays,
   issuanceRecord,
   getSubscriptionPeriodEnd, computeExpiryDays, checkIdempotency,
-  isTransientError,
+  isTransientError, oneTimePurchase,
 } from './lib/webhook-logic.js';
 
 // ---------------------------------------------------------------------------
@@ -35,6 +35,10 @@ function generateLicenseKey(edition, orgName, seats, days, renewalCount = 0) {
   // so this is triage help, not the record — the record goes to Stripe metadata.
   console.log(`[generateLicenseKey] Payload: Edition=${payload.edition}, Org=${payload.org}, Seats=${payload.seats}, Expiry=${new Date(payload.exp * 1000).toISOString()}, jti=${payload.jti}`);
 
+  return signLicensePayload(payload);
+}
+
+function signLicensePayload(payload) {
   // Resolve the private key from env var — supports two formats:
   //   1. Pure base64 body (no headers, no newlines) — most reliable in Vercel
   //   2. Full PEM (with -----BEGIN/END----- headers, real or literal \n)
@@ -115,10 +119,10 @@ async function sendFulfilmentAlert(reason, details = {}) {
   }
 }
 
-async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition) {
+async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition, expiresAt) {
   console.log(`[sendLicenseEmail] Preparing to send email to ${customerEmail} (Tier: ${tier})`);
   const transporter = createTransporter();
-  const expiryDate = new Date(Date.now() + expiryDays * 86400 * 1000).toLocaleDateString('en-US', {
+  const expiryDate = new Date(expiresAt !== undefined ? expiresAt * 1000 : Date.now() + expiryDays * 86400 * 1000).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
 
@@ -240,6 +244,41 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('[Webhook] Signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
+  }
+
+  // New one-time purchases use a purchase-specific receipt, never the
+  // customer-wide last-purchase pointer. Receipt writes are not a lock:
+  // concurrent attempts may email twice, with identical signed claims.
+  if (event.type === 'checkout.session.completed' &&
+      event.data.object.mode === 'payment' &&
+      event.data.object.metadata?.fulfillment_version === 'one_time_v1') {
+    const session = event.data.object;
+    try {
+      const purchase = oneTimePurchase(session);
+      if (!purchase) return res.status(200).json({ received: true, info: 'Unpaid session' });
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 2 });
+      const current = await stripe.checkout.sessions.retrieve(session.id);
+      if (current.metadata?.fulfillment_v1_complete === 'true')
+        return res.status(200).json({ received: true, info: 'Duplicate session' });
+      const lines = await stripe.checkout.sessions.listLineItems(session.id, { limit: 2 });
+      if (lines.has_more || lines.data.length !== 1 ||
+          lines.data[0].price?.id !== purchase.priceId || lines.data[0].quantity !== 1)
+        throw new Error('Purchased line items do not match the checkout snapshot');
+      const { token, payload } = signLicensePayload(purchase.payload);
+      await sendLicenseEmail(purchase.email, purchase.name, purchase.tier,
+        token, purchase.seats, 3650, payload.edition, payload.exp);
+      // A failed/ambiguous write returns 500. Retry can repeat the email but
+      // derives exactly the same token from the original completed event.
+      await stripe.checkout.sessions.update(session.id, { metadata: {
+        fulfillment_v1_complete: 'true',
+        ...issuanceRecord({ jti: payload.jti, edition: payload.edition,
+          seats: payload.seats, exp: payload.exp, issuedAt: payload.iat }),
+      } });
+      return res.status(200).json({ received: true });
+    } catch (err) {
+      console.error('[Webhook] One-time fulfillment failed:', err.message);
+      return res.status(500).json({ error: 'One-time fulfillment needs retry' });
+    }
   }
 
   // Handle the checkout.session.completed event (initial payment confirm)
