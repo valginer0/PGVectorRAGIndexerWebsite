@@ -112,14 +112,17 @@ automatic_tax.enabled=false. No card was charged.
    Public SPKI DER SHA-256:
    88f8074f76074ccc699bbd061e33ba0d503ed59ad445e2f16c8f6bd716c3b044.
    This verifies release-source key compatibility; the MSI was not independently unpacked.
-3. ALERT GAP: automatic failure email is NOT confirmed for self-service purchases.
-   The one_time_v1 catch in api/webhook.js only logs and returns HTTP 500 for Stripe
-   retry; it does not call sendFulfilmentAlert. Existing alert tests cover legacy
-   fulfillment, not this path. The existing helper uses ALERT_EMAIL or falls back to
-   SMTP_USER (production SMTP_USER is hello@ragvault.net). Delivery to the owner's
-   personal inbox is not verified. If SMTP itself fails, the same SMTP alert route
-   can fail too. Until fixed, check Stripe delivery failures and Vercel logs manually
-   for the first sale; do not rely on an alert arriving.
+3. Failure-alert gap fixed: the one_time_v1 catch now calls sendFulfilmentAlert
+   for checkout.session.completed and checkout.session.async_payment_succeeded.
+   The alert includes Checkout session/event IDs and explains that the license may
+   already have been sent if recording completion failed. HTTP 500 remains intact
+   for Stripe retry, including when the alert itself fails.
+   Recipient: ALERT_EMAIL when set, otherwise SMTP_USER (hello@ragvault.net in
+   production). Inbox arrival has not been verified. No live payment or synthetic
+   production webhook was sent. The same SMTP outage can prevent both customer
+   mail and operator alerts; Vercel logs and Stripe failures remain the fallback.
+   Offline tests cover both event types, operator recipient/fallback, alert failure,
+   ambiguous receipt writes, and no alerts on success/duplicates/unpaid sessions.
 4. Fresh production POST /api/checkout returned HTTP 410.
 
 Live automatic payment-to-webhook-to-license-email delivery remains UNVERIFIED BY

@@ -49,11 +49,12 @@ async function deliver(input = event()) {
   return response;
 }
 function tokens() {
-  return mocks.send.mock.calls.map(([mail]) =>
+  return mocks.send.mock.calls.filter(([mail]) => mail.html).map(([mail]) =>
     mail.html.match(/>(eyJ[A-Za-z0-9_.-]+)<\/code>/)[1]);
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  delete process.env.ALERT_EMAIL;
   receipts = new Map();
   process.env.STRIPE_SECRET_KEY = 'sk_test_fixture';
   process.env.STRIPE_WEBHOOK_SECRET = 'whsec_fixture';
@@ -93,7 +94,7 @@ describe('EXP-001 one-time fulfillment through the real handler and signer', () 
       key: jwk, format: 'jwk',
     }).export({ type: 'pkcs8', format: 'pem' });
     expect((await deliver()).code).toBe(500);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.send.mock.calls.filter(([mail]) => mail.html)).toHaveLength(0);
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
@@ -133,12 +134,13 @@ describe('EXP-001 one-time fulfillment through the real handler and signer', () 
     });
     expect((await deliver()).code).toBe(500);
     expect((await deliver()).code).toBe(200);
-    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(tokens()).toHaveLength(1);
+    expect(mocks.send.mock.calls.filter(([mail]) => mail.text)).toHaveLength(1);
   });
 
   it('does not issue for unpaid checkout', async () => {
     expect((await deliver(event(undefined, { payment_status: 'unpaid' }))).code).toBe(200);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.send.mock.calls.filter(([mail]) => mail.html)).toHaveLength(0);
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
@@ -147,14 +149,14 @@ describe('EXP-001 one-time fulfillment through the real handler and signer', () 
       has_more: false, data: [{ quantity: 1, price: { id: 'price_other' } }],
     });
     expect((await deliver()).code).toBe(500);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.send.mock.calls.filter(([mail]) => mail.html)).toHaveLength(0);
   });
 
   it('does not guess missing purchase terms', async () => {
     const input = event();
     delete input.data.object.metadata.seats;
     expect((await deliver(input)).code).toBe(500);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.send.mock.calls.filter(([mail]) => mail.html)).toHaveLength(0);
   });
 });
 
@@ -192,7 +194,7 @@ describe('self-service fulfillment preserves the deterministic license contract'
       if (scenario === 'missing-acceptance') delete session.metadata.terms_accepted;
       if (scenario === 'wrong-seats') session.metadata.seats = '1';
       expect((await deliver(input)).code).toBe(500);
-      expect(mocks.send).not.toHaveBeenCalled();
+      expect(mocks.send.mock.calls.filter(([mail]) => mail.html)).toHaveLength(0);
       expect(mocks.update).not.toHaveBeenCalled();
     });
   it('concurrent self-service deliveries carry identical tokens and offer terms', async () => {
@@ -205,10 +207,10 @@ describe('self-service fulfillment preserves the deterministic license contract'
     const input = purchase();
     input.data.object.payment_status = 'unpaid';
     expect((await deliver(input)).code).toBe(200);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.send.mock.calls.filter(([mail]) => mail.html)).toHaveLength(0);
     input.type = 'checkout.session.async_payment_failed';
     expect((await deliver(input)).code).toBe(200);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.send.mock.calls.filter(([mail]) => mail.html)).toHaveLength(0);
     input.type = 'checkout.session.async_payment_succeeded';
     input.data.object.payment_status = 'paid';
     expect((await deliver(input)).code).toBe(200);
@@ -222,5 +224,50 @@ describe('self-service fulfillment preserves the deterministic license contract'
     expect((await deliver(purchase())).code).toBe(200);
     expect(tokens()).toHaveLength(2);
     expect(new Set(tokens()).size).toBe(1);
+  });
+});
+
+describe('one-time operator alerts retain retry semantics', () => {
+  it.each(['checkout.session.completed', 'checkout.session.async_payment_succeeded'])
+    ('alerts the configured operator on %s delivery failure', async type => {
+      process.env.ALERT_EMAIL = 'owner@example.com';
+      mocks.send.mockRejectedValueOnce(new Error('delivery failed'));
+      const input = event();
+      input.type = type;
+      Object.assign(input.data.object.metadata, {
+        offer_family: 'self_service', offer_version: '2026-11-18', terms_accepted: '2026-11-18',
+      });
+      input.data.object.consent = { terms_of_service: 'accepted' };
+      expect((await deliver(input)).code).toBe(500);
+      const alert = mocks.send.mock.calls[1][0];
+      expect(alert.to).toBe('owner@example.com');
+      expect(alert.subject).toContain('one-time checkout');
+      expect(alert.text).toContain(input.data.object.id);
+      expect(alert.text).toContain(input.id);
+      expect(alert.text).toContain('Stripe will retry');
+      expect(alert.text).not.toContain('has received nothing');
+      expect(receipts.size).toBe(0);
+    });
+  it('still returns 500 if both customer email and alert fail', async () => {
+    mocks.send.mockRejectedValueOnce(new Error('SMTP down'))
+      .mockRejectedValueOnce(new Error('SMTP still down'));
+    expect((await deliver()).code).toBe(500);
+    expect(mocks.send).toHaveBeenCalledTimes(2);
+    expect(mocks.send.mock.calls[1][0].to).toBe('test@example.com');
+    expect(receipts.size).toBe(0);
+  });
+  it('warns of possible prior delivery when the receipt write fails', async () => {
+    mocks.update.mockRejectedValueOnce(new Error('receipt unavailable'));
+    expect((await deliver()).code).toBe(500);
+    expect(mocks.send.mock.calls[1][0].text).toContain('may already have been sent');
+    expect((await deliver()).code).toBe(200);
+    expect(tokens()).toHaveLength(2);
+    expect(new Set(tokens()).size).toBe(1);
+  });
+  it('sends no operator alert for success, duplicates, or unpaid sessions', async () => {
+    await deliver();
+    await deliver();
+    await deliver(event('cs_unpaid', { payment_status: 'unpaid' }));
+    expect(mocks.send.mock.calls.filter(([mail]) => mail.text)).toHaveLength(0);
   });
 });

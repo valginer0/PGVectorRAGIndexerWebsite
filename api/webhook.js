@@ -100,7 +100,7 @@ function createTransporter() {
  * Deliberately cannot throw: an alerting failure must never turn a handled
  * failure into an unhandled one.
  */
-async function sendFulfilmentAlert(reason, details = {}) {
+async function sendFulfilmentAlert(reason, details = {}, deliveryUncertain = false) {
   const lines = Object.entries(details)
     .filter(([, v]) => v !== undefined && v !== null && v !== '')
     .map(([k, v]) => `${k}: ${v}`)
@@ -120,10 +120,13 @@ async function sendFulfilmentAlert(reason, details = {}) {
       to,
       subject: `[RagVault] Fulfilment failed — ${reason}`,
       text:
-        `A payment was processed but no licence was delivered.\n\n` +
+        (deliveryUncertain
+          ? `A paid checkout needs attention: license delivery or its completion record could not be confirmed.\n\n`
+          : `A payment was processed but no licence was delivered.\n\n`) +
         `${lines}\n\n` +
-        `The customer has been charged and has received nothing. ` +
-        `Check the Stripe dashboard for the id above, then issue the licence by hand.\n`,
+        (deliveryUncertain
+          ? `Stripe will retry. Check sent mail and the Checkout receipt before manual recovery; the license may already have been sent. Preserve the original key and expiry.\n`
+          : `The customer has been charged and has received nothing. Check the Stripe dashboard for the id above, then issue the licence by hand.\n`),
     });
     console.log('[ALERT] Fulfilment alert sent.');
   } catch (e) {
@@ -291,6 +294,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ received: true });
     } catch (err) {
       console.error('[Webhook] One-time fulfillment failed:', err.message);
+      await sendFulfilmentAlert('one-time checkout delivery needs attention', {
+        session_id: session.id, event_id: event.id, event_type: event.type,
+      }, true);
       return res.status(500).json({ error: 'One-time fulfillment needs retry' });
     }
   }
