@@ -713,10 +713,10 @@
             <span class="faq-chevron">▸</span>
             Does PGVectorRAGIndexer include installation or support services?
           </summary>
-          <p class="faq-answer">The software is self-serve, with documentation written so a technical
-            administrator can install and run it unaided. Deployment and tuning engagements &mdash; installing on your
-            network, pointing ingestion at your document store, and tuning retrieval for your document types &mdash;
-            are available separately. Email <a href="mailto:hello@ragvault.net">hello@ragvault.net</a>.</p>
+          <p class="faq-answer">New paid offers are self-service. You install, configure, and troubleshoot
+            using the documentation. Technical support, setup assistance, onboarding, and deployment services are not
+            included. For billing, refunds, or license delivery, email
+            <a href="mailto:hello@ragvault.net">hello@ragvault.net</a>. Existing purchases retain their original terms.</p>
         </details>
         <details class="faq-item">
           <summary class="faq-question">
@@ -814,7 +814,7 @@
             rel="noopener noreferrer" class="btn btn-secondary">
             <span>Team Deployment Guide</span>
           </a>
-          <a href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/LICENSE_COMMERCIAL.txt" target="_blank"
+          <a href="/self-service-terms-2026-11-18.html" target="_blank"
             rel="noopener noreferrer" class="btn btn-primary">
             <span>Commercial License</span>
           </a>
@@ -831,22 +831,15 @@
         <p class="section-description">Free for individuals. Fair pricing for teams.</p>
       </div>
 
-      <!-- Billing toggle: Annual / One-time -->
-      <div class="billing-toggle-wrapper">
-        <div class="billing-toggle" id="billing-toggle" role="group" aria-label="Billing period">
-          <button class="billing-toggle-btn billing-toggle-btn--active" id="toggle-annual" data-billing="annual"
-            aria-pressed="true">
-            Annual
-            <span class="billing-save-badge">Best value</span>
-          </button>
-          <button class="billing-toggle-btn" id="toggle-perpetual" data-billing="perpetual" aria-pressed="false">
-            One-time
-          </button>
-        </div>
-      </div>
-
-      <p class="section-description">One-time purchase: a 3,650-day license (approximately 10 years),
-        including all updates to your purchased edition during the license term. No automatic renewal.</p>
+      <p class="section-description">Pay once. A 3,650-day license (approximately 10 years) from checkout
+        creation, with all updates to your purchased edition during the term, including major versions.
+        No automatic renewal. Self-service only: no technical support, setup assistance, or onboarding.</p>
+      <p class="section-description">Full refund on request within 14 days of payment.
+        Existing customers keep their original purchase terms.</p>
+      <p class="section-description">Quote/invoice requests: email <a href="mailto:hello@ragvault.net">hello@ragvault.net</a>.</p>
+      <p class="section-description"><label><input type="checkbox" id="self-service-terms">
+        I agree to the <a href="/self-service-terms-2026-11-18.html" target="_blank" rel="noopener">Self-Service Terms</a>,
+        including the license term, support exclusions, and refund policy.</label></p>
 
       <div class="pricing-grid">
         <!-- Community (Free) -->
@@ -880,11 +873,11 @@
         <div class="pricing-card pricing-card-featured">
           <div class="pricing-badge">Most Popular</div>
           <div class="pricing-card-header">
-            <h3 class="pricing-tier-name">Team</h3>
+            <h3 class="pricing-tier-name">Team Self-Service</h3>
             <div class="pricing-price">
               <span class="pricing-currency">$</span>
-              <span class="pricing-amount" data-annual="299" data-perpetual="499">299</span>
-              <span class="pricing-period" data-annual="/ year" data-perpetual="one-time">/ year</span>
+              <span class="pricing-amount" data-perpetual="499">499</span>
+              <span class="pricing-period">one-time</span>
             </div>
             <p class="pricing-tier-desc">For small teams sharing a single server</p>
           </div>
@@ -898,7 +891,7 @@
             <li><span class="pricing-check">&#10003;</span> Data retention policies</li>
             <li><span class="pricing-check">&#10003;</span> SSO / SAML (Okta and compatible IdPs)</li>
             <li><span class="pricing-check">&#10003;</span> SCIM user provisioning</li>
-            <li><span class="pricing-check">&#10003;</span> Email support for setup and licensing</li>
+            <li><span class="pricing-check">&#10003;</span> Self-service documentation</li>
           </ul>
           <button onclick="startCheckout('team', event)" class="btn btn-primary pricing-btn">
             <span>Buy Team License</span>
@@ -908,20 +901,18 @@
         <!-- Organization -->
         <div class="pricing-card">
           <div class="pricing-card-header">
-            <h3 class="pricing-tier-name">Organization</h3>
+            <h3 class="pricing-tier-name">Organization Self-Service</h3>
             <div class="pricing-price">
               <span class="pricing-currency">$</span>
-              <span class="pricing-amount" id="org-price" data-annual="799" data-perpetual="1299">799</span>
-              <span class="pricing-period" data-annual="/ year" data-perpetual="one-time">/ year</span>
+              <span class="pricing-amount" id="org-price" data-perpetual="1299">1,299</span>
+              <span class="pricing-period">one-time</span>
             </div>
-            <p class="pricing-tier-desc">Same features as Team, more seats &mdash; and a person to call</p>
+            <p class="pricing-tier-desc">Same features as Team, more seats</p>
           </div>
           <ul class="pricing-features">
             <li><span class="pricing-check">&#10003;</span> Everything in Team</li>
             <li><span class="pricing-check">&#10003;</span> 25 users per licence &mdash; stack for more</li>
             <li><span class="pricing-check">&#10003;</span> Multiple server instances</li>
-            <li><span class="pricing-check">&#10003;</span> 30-minute onboarding call</li>
-            <li><span class="pricing-check">&#10003;</span> Business-day email support</li>
           </ul>
           <div class="seat-calc">
             <label class="seat-calc-label" for="seat-count">How many users?</label>
@@ -936,30 +927,6 @@
           </button>
         </div>
 
-        <!-- Enterprise -->
-        <div class="pricing-card">
-          <div class="pricing-card-header">
-            <h3 class="pricing-tier-name">Enterprise</h3>
-            <div class="pricing-price">
-              <span class="pricing-amount">Custom</span>
-              <span class="pricing-period">contact us</span>
-            </div>
-            <p class="pricing-tier-desc">Procurement, contracts and hands-on deployment</p>
-          </div>
-          <ul class="pricing-features">
-            <li><span class="pricing-check">&#10003;</span> Everything in Organization</li>
-            <li><span class="pricing-check">&#10003;</span> Purchase orders and invoicing</li>
-            <li><span class="pricing-check">&#10003;</span> Master service agreement and custom terms</li>
-            <li><span class="pricing-check">&#10003;</span> Security review and questionnaire support</li>
-            <li><span class="pricing-check">&#10003;</span> Deployment engagement &mdash; installed and tuned on your systems</li>
-            <li><span class="pricing-check">&#10003;</span> Volume licensing across multiple sites</li>
-            <li><span class="pricing-check">&#10003;</span> Dedicated support channel with agreed response times</li>
-          </ul>
-          <a href="mailto:hello@ragvault.net?subject=Enterprise%20License%20Inquiry"
-            class="btn btn-secondary pricing-btn">
-            <span>Contact Us</span>
-          </a>
-        </div>
       </div>
 
       <!-- Pricing FAQ -->
@@ -1006,20 +973,20 @@
           <details class="faq-item">
             <summary class="faq-question">
               <span class="faq-chevron">&#9656;</span>
-              Can I get a purchase order or invoice?
+              How do I request a refund?
             </summary>
-            <p class="faq-answer">Yes. We support PO-based procurement for Organization and Enterprise tiers. Email us
-              and we'll provide a formal quote.</p>
+            <p class="faq-answer">Email <a href="mailto:hello@ragvault.net">hello@ragvault.net</a> within 14 days of payment
+              with your purchase email and receipt. We will refund the full payment on request. A refunded key cannot
+              be disabled remotely; you must stop using it.</p>
           </details>
           <details class="faq-item">
             <summary class="faq-question">
               <span class="faq-chevron">&#9656;</span>
-              What happens if I don't renew?
+              How long does my license last?
             </summary>
-            <p class="faq-answer">Annual licenses: the software continues to work with the version you have, but you lose
-              access to updates and priority support. One-time licenses last 3,650 days (approximately 10 years), with all updates
-              to the purchased edition included during that term, including major versions.
-              The license email shows the exact expiry date. Your data is never locked.</p>
+            <p class="faq-answer">New purchases last 3,650 days from checkout creation, with all updates
+              to the purchased edition included during that term, including major versions. No automatic renewal.
+              Your license email shows the exact expiry date. Existing customers keep their original terms.</p>
           </details>
           <details class="faq-item">
             <summary class="faq-question">
@@ -1030,9 +997,7 @@
               every key into your server. It adds the seat limits together automatically: no negotiation, no
               configuration changes, and the total appears in the Admin Console Licenses panel. The calculator on the
               Organization plan above works out how many licences you need. This scales as far as you need it to,
-              including past 100 users; if you would rather have a conversation about a larger rollout,
-              <a href="mailto:hello@ragvault.net?subject=Large%20Deployment%20Inquiry">talk to us</a> about a
-              deployment engagement.</p>
+              including past 100 users.</p>
           </details>
         </div>
       </div>
@@ -1207,7 +1172,7 @@
         </p>
         <p class="support-legal">Donations do not grant commercial usage rights.</p>
         <p class="support-note">Commercial use requires a <a
-            href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/LICENSE_COMMERCIAL.txt" target="_blank"
+            href="/self-service-terms-2026-11-18.html" target="_blank"
             rel="noopener noreferrer">commercial license</a>.</p>
       </div>
     </div>
@@ -1290,7 +1255,7 @@
           </p>
           <div class="footer-license">
             <p class="footer-micro-link">Free for individuals · <a
-                href="https://github.com/valginer0/PGVectorRAGIndexer/blob/main/LICENSE_COMMERCIAL.txt" target="_blank"
+                href="/self-service-terms-2026-11-18.html" target="_blank"
                 rel="noopener noreferrer">Commercial licensing</a> available · <a href="#support">Optional donations
                 welcome</a></p>
           </div>
@@ -1331,7 +1296,7 @@
         <div class="footer-section">
           <h4 class="footer-title">Connect</h4>
           <ul class="footer-links">
-            <li><a href="mailto:hello@ragvault.net">Email Support</a></li>
+            <li><a href="mailto:hello@ragvault.net">Billing &amp; License Delivery</a></li>
             <li><a href="https://github.com/sponsors/valginer0" target="_blank" rel="noopener noreferrer">Sponsor</a>
             </li>
             <li><a href="https://github.com/valginer0" target="_blank" rel="noopener noreferrer">GitHub Profile</a></li>
@@ -1376,48 +1341,7 @@
 
   <!-- Stripe Checkout -->
   <script>
-    // Billing state: "annual" | "perpetual"
-    let activeBilling = 'annual';
-
-    // ---- Toggle logic ----
-    (function setupBillingToggle() {
-      const toggle = document.getElementById('billing-toggle');
-      if (!toggle) return;
-
-      const dynamicAmounts = document.querySelectorAll('.pricing-amount[data-annual]');
-      const dynamicPeriods = document.querySelectorAll('.pricing-period[data-annual]');
-      const btnAnnual = document.getElementById('toggle-annual');
-      const btnPerpetual = document.getElementById('toggle-perpetual');
-
-      function applyBilling(billing) {
-        activeBilling = billing;
-
-        dynamicAmounts.forEach(el => {
-          el.style.opacity = '0';
-          setTimeout(() => {
-            el.textContent = el.dataset[billing];
-            el.style.opacity = '1';
-          }, 150);
-        });
-        dynamicPeriods.forEach(el => {
-          el.style.opacity = '0';
-          setTimeout(() => {
-            el.textContent = el.dataset[billing];
-            el.style.opacity = '1';
-          }, 150);
-        });
-
-        btnAnnual.classList.toggle('billing-toggle-btn--active', billing === 'annual');
-        btnPerpetual.classList.toggle('billing-toggle-btn--active', billing === 'perpetual');
-        btnAnnual.setAttribute('aria-pressed', String(billing === 'annual'));
-        btnPerpetual.setAttribute('aria-pressed', String(billing === 'perpetual'));
-
-        if (typeof renderSeatCalc === 'function') renderSeatCalc();
-      }
-
-      btnAnnual.addEventListener('click', () => applyBilling('annual'));
-      btnPerpetual.addEventListener('click', () => applyBilling('perpetual'));
-    })();
+    const activeBilling = 'perpetual'; // One-time offers only.
 
     // ---- Seat calculator ----
     // The pricing card's 25-user line reads as a ceiling, and the Enterprise
@@ -1457,7 +1381,7 @@
       const licences = Math.ceil(users / ORG_SEATS_PER_LICENCE);
       const total = licences * price;
       const each = licences === 1 ? 'licence' : 'licences';
-      const period = activeBilling === 'annual' ? ' / year' : ' one-time';
+      const period = ' one-time';
       out.innerHTML = `<strong>${licences} ${each}</strong> &middot; ` +
         `$${total.toLocaleString('en-US')}${period}` +
         `<span class="seat-calc-covers">covers ${(licences * ORG_SEATS_PER_LICENCE).toLocaleString('en-US')} users</span>`;
@@ -1472,16 +1396,21 @@
 
     // ---- Checkout ----
     async function startCheckout(tier, event) {
+      if (!document.getElementById('self-service-terms').checked) {
+        alert('Please read and accept the Self-Service Terms before checkout.');
+        document.getElementById('self-service-terms').focus();
+        return;
+      }
       const btn = event.target.closest('button');
       const originalText = btn.innerHTML;
       btn.innerHTML = '<span>Processing...</span>';
       btn.disabled = true;
 
       try {
-        const res = await fetch('/api/checkout', {
+        const res = await fetch('/api/self-service-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tier, billing: activeBilling }),
+          body: JSON.stringify({ tier, termsAccepted: true, offerVersion: '2026-11-18' }),
         });
 
         const data = await res.json();

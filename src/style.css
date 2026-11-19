@@ -1110,7 +1110,7 @@ code {
 
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-md);
   margin-top: var(--spacing-xl);
   align-items: start;
@@ -2284,3 +2284,6 @@ code {
   line-height: 1.45;
   color: var(--color-text-tertiary);
 }
+
+/* Purchase terms remain readable against the dark pricing background. */
+.pricing-section .section-description a { color: #b8b2ff; text-decoration: underline; }

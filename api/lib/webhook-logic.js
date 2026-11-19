@@ -226,6 +226,14 @@ export function oneTimePurchase(session) {
     throw new Error('Unsupported one-time fulfillment contract');
   if (session.payment_status !== 'paid') return null;
   const { tier, seats: rawSeats, purchase_price_id: priceId } = session.metadata;
+  const selfService = session.metadata.offer_family === 'self_service';
+  if (session.metadata.offer_family && !selfService)
+    throw new Error('Unknown purchase offer');
+  if (selfService && (session.metadata.offer_version !== SELF_SERVICE_VERSION ||
+      session.metadata.terms_accepted !== SELF_SERVICE_VERSION ||
+      session.consent?.terms_of_service !== 'accepted' ||
+      Number(rawSeats) !== SELF_SERVICE_OFFERS[tier]?.seats))
+    throw new Error('Invalid self-service terms acceptance');
   const seats = Number(rawSeats);
   if (!['team', 'organization'].includes(tier) ||
       !Number.isSafeInteger(seats) || seats < 1 || seats > TIER_SEAT_LIMITS[tier] ||
@@ -238,7 +246,7 @@ export function oneTimePurchase(session) {
   if (typeof email !== 'string' || !email.includes('@'))
     throw new Error('Missing purchase email');
   return {
-    tier, seats, priceId, email, name,
+    tier, seats, priceId, email, name, selfService,
     payload: {
       edition: tier, org: name || email, seats,
       iat: session.created, exp: session.created + 3650 * 86400,
@@ -255,4 +263,21 @@ export function assertPreviewEmail(message, env) {
       typeof allowed !== 'string' || !allowed.includes('@') ||
       message.to !== allowed || message.cc || message.bcc)
     throw new Error('Preview email recipient or test-mode restriction failed');
+}
+
+// A version identifies the terms accepted at purchase; never rewrite published terms.
+export const SELF_SERVICE_VERSION = '2026-11-18';
+export const SELF_SERVICE_OFFERS = Object.freeze({
+  team: Object.freeze({ seats: 5, amount: 49900, lookupKey: 'team_self_service_20261118',
+    priceEnv: 'STRIPE_PRICE_TEAM_SELF_SERVICE' }),
+  organization: Object.freeze({ seats: 25, amount: 129900, lookupKey: 'org_self_service_20261118',
+    priceEnv: 'STRIPE_PRICE_ORG_SELF_SERVICE' }),
+});
+export function selfServicePriceMatches(price, tier) {
+  const offer = SELF_SERVICE_OFFERS[tier];
+  return Boolean(offer && price?.active && !price.recurring &&
+    price.currency === 'usd' && price.unit_amount === offer.amount &&
+    price.metadata?.offer_family === 'self_service' &&
+    price.metadata?.offer_version === SELF_SERVICE_VERSION &&
+    price.metadata?.tier === tier);
 }

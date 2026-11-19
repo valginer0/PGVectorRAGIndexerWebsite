@@ -60,6 +60,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Stop new legacy sales without altering already-paid orders or renewals.
+  if (process.env.SELF_SERVICE_ENABLED === 'true')
+    return res.status(410).json({ error: 'Please use the self-service offers on the pricing page.' });
+
   if (!process.env.STRIPE_SECRET_KEY) {
     console.error('STRIPE_SECRET_KEY is not set');
     return res.status(500).json({ error: 'Payment system not configured. Email hello@ragvault.net' });

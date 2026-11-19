@@ -131,7 +131,7 @@ async function sendFulfilmentAlert(reason, details = {}) {
   }
 }
 
-async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition, expiresAt) {
+async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, seats, expiryDays, edition, expiresAt, selfService = false) {
   console.log(`[sendLicenseEmail] Preparing to send email to ${customerEmail} (Tier: ${tier})`);
   const transporter = createTransporter();
   const expiryDate = new Date(expiresAt !== undefined ? expiresAt * 1000 : Date.now() + expiryDays * 86400 * 1000).toLocaleDateString('en-US', {
@@ -159,7 +159,7 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
       </div>
       <div style="background: #1e1e2e; padding: 30px; border-radius: 0 0 12px 12px; color: #e2e8f0;">
         <p>Hi${customerName ? ' ' + customerName : ''},</p>
-        <p>Thank you for purchasing a <strong>${tierDisplay}</strong> license for PGVectorRAGIndexer!</p>
+        <p>Thank you for purchasing a <strong>${tierDisplay}${selfService ? ' Self-Service' : ''}</strong> license for PGVectorRAGIndexer!</p>
 
         <div style="background: #2d2d3f; border: 1px solid #4a4a5e; border-radius: 8px; padding: 20px; margin: 20px 0;">
           <p style="margin: 0 0 8px 0; color: #9ca3af; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">License Key</p>
@@ -180,7 +180,9 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
           <code style="display: block; background: #1a1a2e; padding: 8px; border-radius: 4px; font-size: 11px; margin: 4px 0 0 0; color: #a5b4fc;">Save the key to %APPDATA%\\PGVectorRAGIndexer\\license.key</code>
         </div>
 
-        <p style="color: #9ca3af; font-size: 13px;">Need help? Reply to this email or visit <a href="https://www.ragvault.net" style="color: #a5b4fc;">ragvault.net</a>.</p>
+        ${selfService
+          ? '<p>Self-Service: no technical support, setup assistance, or onboarding. Your license lasts 3,650 days from checkout creation, including all updates to your edition (including major versions) during that term. No automatic renewal.</p><p>Full refund on request within 14 days of payment. For refunds, billing, or license delivery issues, reply to this email or email hello@ragvault.net. A refunded license must no longer be used; it cannot be disabled remotely.</p><p><a href="https://www.ragvault.net/self-service-terms-2026-11-18.html">Your purchase terms (2026-11-18)</a></p>'
+          : '<p style="color: #9ca3af; font-size: 13px;">Need help? Reply to this email or visit <a href="https://www.ragvault.net" style="color: #a5b4fc;">ragvault.net</a>.</p>'}
       </div>
     </div>
   `;
@@ -189,7 +191,7 @@ async function sendLicenseEmail(customerEmail, customerName, tier, licenseKey, s
     await transporter.sendMail({
       from: `"RagVault" <${process.env.SMTP_USER}>`,
       to: customerEmail,
-      subject: `Your RagVault ${tierDisplay} License Key`,
+      subject: `Your RagVault ${tierDisplay}${selfService ? ' Self-Service' : ''} License Key`,
       html,
     });
     console.log(`[sendLicenseEmail] SUCCESS: Email sent to ${customerEmail}`);
@@ -261,7 +263,7 @@ export default async function handler(req, res) {
   // New one-time purchases use a purchase-specific receipt, never the
   // customer-wide last-purchase pointer. Receipt writes are not a lock:
   // concurrent attempts may email twice, with identical signed claims.
-  if (event.type === 'checkout.session.completed' &&
+  if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type) &&
       event.data.object.mode === 'payment' &&
       event.data.object.metadata?.fulfillment_version === 'one_time_v1') {
     const session = event.data.object;
@@ -278,7 +280,7 @@ export default async function handler(req, res) {
         throw new Error('Purchased line items do not match the checkout snapshot');
       const { token, payload } = signLicensePayload(purchase.payload);
       await sendLicenseEmail(purchase.email, purchase.name, purchase.tier,
-        token, purchase.seats, 3650, payload.edition, payload.exp);
+        token, purchase.seats, 3650, payload.edition, payload.exp, purchase.selfService);
       // A failed/ambiguous write returns 500. Retry can repeat the email but
       // derives exactly the same token from the original completed event.
       await stripe.checkout.sessions.update(session.id, { metadata: {
