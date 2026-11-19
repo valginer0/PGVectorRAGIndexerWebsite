@@ -117,9 +117,12 @@ automatic_tax.enabled=false. No card was charged.
    The alert includes Checkout session/event IDs and explains that the license may
    already have been sent if recording completion failed. HTTP 500 remains intact
    for Stripe retry, including when the alert itself fails.
-   Recipient: ALERT_EMAIL when set, otherwise SMTP_USER (hello@ragvault.net in
-   production). Inbox arrival has not been verified. No live payment or synthetic
-   production webhook was sent. The same SMTP outage can prevent both customer
+   Production ALERT_EMAIL=valginer0@gmail.com was explicitly configured.
+   One test message through the production Zoho SMTP settings was accepted with
+   SMTP 250 and confirmed in that Gmail inbox on November 18 at 21:12 Central,
+   subject "RagVault production alert email test - November 18, 2026".
+   This verifies SMTP transport and inbox arrival, not automatic failure detection.
+   No live payment or synthetic production webhook was sent. The same SMTP outage can prevent both customer
    mail and operator alerts; Vercel logs and Stripe failures remain the fallback.
    Offline tests cover both event types, operator recipient/fallback, alert failure,
    ambiguous receipt writes, and no alerts on success/duplicates/unpaid sessions.
@@ -128,16 +131,26 @@ automatic_tax.enabled=false. No card was charged.
 Live automatic payment-to-webhook-to-license-email delivery remains UNVERIFIED BY
 OWNER DECISION. The checks above do not replace an end-to-end paid test.
 
-## First sale: send a key manually
+## First sale: recover delivery; manual signing only as a last resort
 
-1. In LIVE Stripe, locate the actual customer's Checkout session and successful
+1. Fix the cause, then resend the original event from the Stripe dashboard to
+   the production webhook endpoint. Inspect the failure, Vercel logs, completion
+   metadata, and sent-mail/provider logs before resending: a license email may
+   already have been submitted even if recording completion failed. Use the
+   original successful payment event and preserve its purchase snapshot; do not
+   create a new payment or substitute a newly constructed event. Confirm the retry
+   returns HTTP 200 and that the customer's license email was delivered. If it
+   reports a duplicate, check the existing delivery record and resend the same
+   key if necessary. Manual signing below is the last resort, only if correcting
+   and replaying the original event cannot restore delivery.
+2. In LIVE Stripe, locate the actual customer's Checkout session and successful
    completed/async-success event. Confirm payment_status=paid, the payment was not
    refunded, the purchased line item/quantity, customer email, accepted terms, and
    offer version 2026-11-18. Never issue from an unpaid verification session.
-2. Check session fulfillment metadata and delivery logs first. If already delivered,
+3. Check session fulfillment metadata and delivery logs first. If already delivered,
    resend the same key when available. If recovering a failure, use the original
    successful event snapshot, not mutable customer metadata or today's date.
-3. On the trusted owner machine, use the production RSA signer and the existing
+4. On the trusted owner machine, use the production RSA signer and the existing
    oneTimePurchase(snapshot) payload. Claims must remain:
    edition=team/organization; seats=5/25; org=original buyer name or email;
    iat=session.created; exp=session.created + 3650*86400;
@@ -145,12 +158,12 @@ OWNER DECISION. The checks above do not replace an end-to-end paid test.
    Sign with RS256 and verify against the shipped app public key before sending.
    Do not use a generator that invents a new UUID, start date, or expiry.
    Never paste the private key into email, GitHub, or logs.
-4. Send the verified license from hello@ragvault.net to the verified purchase email.
+5. Send the verified license from hello@ragvault.net to the verified purchase email.
    Include edition, seats, exact expiry, installation instructions, the versioned
    terms URL, self-service exclusions, and the 14-day full-refund policy.
    Windows key path: %APPDATA%/PGVectorRAGIndexer/license.key.
    Linux/macOS key path: ~/.pgvector-license/license.key.
-5. Only after successful email submission, merge fulfillment_v1_complete=true and
+6. Only after successful email submission, merge fulfillment_v1_complete=true and
    issuanceRecord(...) fields into that Checkout session's metadata, preserving
    other metadata. Record manual delivery time and mail receipt/message ID.
    If submission is ambiguous, check sent-mail/provider logs before resending;
