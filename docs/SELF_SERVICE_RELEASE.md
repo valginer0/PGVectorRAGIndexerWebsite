@@ -173,3 +173,27 @@ OWNER DECISION. The checks above do not replace an end-to-end paid test.
 
 This is an operator procedure, not a new automated recovery command. No manual
 license was generated or sent during these no-payment checks.
+
+## Independent production alert, webhook and key checks — November 20, 2026 (Central)
+
+Evidence below distinguishes connected API reads from owner observations made in the Stripe/Vercel interfaces. No payment, synthetic webhook, credential change, deployment, or settings change was made in these checks.
+
+### Confirmed through connected Vercel and Stripe reads
+
+- Vercel production `ALERT_EMAIL` is `valginer0@gmail.com` (variable ID `FoUxjM3005INXv3M`). The Vercel API returned `createdAt=updatedAt=2026-11-20T01:49:32.679Z`, corresponding to **November 19, 2026 19:49:32.679 CST**. The same timestamp was returned upon recheck November 20.
+- Production deployment `dpl_5iQhXwQEjXHwbmJqLfNsK5DJbf2K` was created at `2026-11-20T01:53:11.127Z`, build started `2026-11-20T01:53:12.490Z`, and was READY at `2026-11-20T01:53:27.215Z`. It is a `production` deployment assigned to `www.ragvault.net` with Git SHA `3801349afe1b5e4200995c245050b15feed5647b`. The build started roughly **3 min 40 sec after** the API-recorded creation of `ALERT_EMAIL`. This verifies ordering for that variable record, not successful alert delivery.
+- The live Stripe webhook endpoint `we_1T8ROORc9V96VoFQ8OApFOWQ` is enabled at `https://www.ragvault.net/api/webhook` and subscribes to `invoice.paid`, `checkout.session.completed`, `checkout.session.async_payment_succeeded`, and `checkout.session.async_payment_failed`.
+
+### Owner-verified in Stripe and Vercel interfaces — November 20, 2026
+
+- The live Stripe webhook signing secret matched the production Vercel `STRIPE_WEBHOOK_SECRET` in the characters compared by the owner. This is an owner-reported partial comparison, **not** an independent full-value cryptographic comparison. No secret values are recorded here.
+- The live webhook endpoint showed **no deliveries on record**. Consequently there is **no delivery HTTP response status to report**, including for `invoice.paid`. Do not characterize this as successful or failed delivery; end-to-end live payment fulfillment remains unverified by owner decision.
+- Stripe account email notifications for **“Webhook failures” are enabled**, confirmed by the owner in Stripe's interface. This is separate from the application SMTP operator alerts; the November 18 SMTP test verified inbox arrival, not live automatic failure detection.
+- Vercel flagged both `STRIPE_WEBHOOK_SECRET` and `LICENSE_PRIVATE_KEY` as **“Needs Attention”** because of readable/non-Secret environment-variable type. **By explicit owner decision, neither is changed or rotated at this time.** Do not disclose either secret in this document or logs. Do not rotate `LICENSE_PRIVATE_KEY` without the owner's explicit approval and a license-compatibility/migration plan: replacing the current signing key without preserving verification compatibility could invalidate previously issued licenses.
+- The Vercel UI displayed `ALERT_EMAIL` as **“Added 2d ago”**, interpreted by the owner as approximately November 18. This conflicts with, or may reflect different UI rounding/semantics from, the exact November 19 19:49:32 CST API-created timestamp above. **Both observations are retained without guessing which date represents the initial configuration. Do not retroactively alter the existing November 18 release record on this basis.**
+
+### Operational disposition
+
+- Stripe failure-notification preference and the empty delivery history are now recorded as **owner verified**; the earlier November 20 note that those items had not yet been checked is superseded.
+- No live card charge, purchase/refund, webhook replay, forced delivery, key rotation, or redeployment is authorized or performed here.
+- For the first actual sale: inspect the original successful payment event and Vercel logs, fix any failure cause, then resend the **original** Stripe event if necessary; manual signing remains the last resort, as documented above.
